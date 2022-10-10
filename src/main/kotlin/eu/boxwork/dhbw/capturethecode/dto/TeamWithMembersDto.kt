@@ -18,5 +18,4 @@ data class TeamWithMembersDto (
 
     @Schema(description = "the list of team members.",required = true)
     @JsonProperty("teamMembers", required = true)  val teamMembers: MutableList<PlayerDto>
-
 )

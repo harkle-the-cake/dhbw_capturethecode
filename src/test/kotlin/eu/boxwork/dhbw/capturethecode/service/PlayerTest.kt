@@ -31,6 +31,7 @@ class PlayerTest (
 	lateinit var t1 : TeamDto
 	lateinit var t2 : TeamDto
 	lateinit var p1 : PlayerDto
+	lateinit var p3 : PlayerDto
 
 	@BeforeEach
 	fun initData()
@@ -43,7 +44,7 @@ class PlayerTest (
 		p1 = playerService.add(PlayerDto(null,"PLAYER_1","TEAM_A"))
 		playerService.add(PlayerDto(null,"PLAYER_2","TEAM_A"))
 
-		playerService.add(PlayerDto(null,"PLAYER_3","TEAM_B"))
+		p3 = playerService.add(PlayerDto(null,"PLAYER_3","TEAM_B"))
 		playerService.add(PlayerDto(null,"PLAYER_4","TEAM_B"))
 		playerService.add(PlayerDto(null,"PLAYER_5","TEAM_B"))
 	}
@@ -105,6 +106,48 @@ class PlayerTest (
 
 		Assertions.assertNotNull(list)
 		Assertions.assertEquals(2,list!!.size)
+	}
+
+	/*
+	* SINGLE PLAYER
+	* */
+	@Test
+	fun getPlayer() {
+		val player = webClient.get()
+			.uri("$base/${p1.uuid}")
+			.header("Authorization",getToken(teamAToken))
+			.retrieve().bodyToMono(PlayerDto::class.java).block()
+
+		Assertions.assertNotNull(player)
+		Assertions.assertEquals(p1.teamName, player!!.teamName)
+		Assertions.assertEquals(p1.name, player.name)
+	}
+
+	@Test
+	fun getPlayerAllowed() {
+		val player = webClient.get()
+			.uri("$base/${p1.uuid}")
+			.header("Authorization",getToken(teamBToken))
+			.retrieve().bodyToMono(PlayerDto::class.java).block()
+
+		Assertions.assertNotNull(player)
+		Assertions.assertEquals(p1.teamName, player!!.teamName)
+		Assertions.assertEquals(p1.name, player.name)
+	}
+
+	@Test
+	fun getPlayerNotFound() {
+		try {
+			webClient.get()
+				.uri("$base/${UUID.randomUUID()}")
+				.header("Authorization",getToken(teamAToken))
+				.retrieve().bodyToMono(TeamDto::class.java).block()
+			fail("got player infos")
+		}
+		catch (e: WebClientResponseException)
+		{
+			Assertions.assertEquals(404, e.rawStatusCode)
+		}
 	}
 
 

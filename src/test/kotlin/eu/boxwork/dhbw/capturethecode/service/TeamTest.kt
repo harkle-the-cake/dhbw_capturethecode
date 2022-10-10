@@ -80,6 +80,43 @@ class TeamTest (
 		Assertions.assertEquals(2,list!!.size)
 	}
 
+	@Test
+	fun getTeam() {
+		val team = webClient.get()
+			.uri("$base/${t1.uuid}")
+			.header("Authorization",getToken(teamAToken))
+			.retrieve().bodyToMono(TeamDto::class.java).block()
+
+		Assertions.assertNotNull(team)
+		Assertions.assertEquals(t1.teamName, team!!.teamName)
+	}
+
+	@Test
+	fun getTeamAllowed() {
+		val team = webClient.get()
+			.uri("$base/${t1.uuid}")
+			.header("Authorization",getToken(teamBToken))
+			.retrieve().bodyToMono(TeamDto::class.java).block()
+
+		Assertions.assertNotNull(team)
+		Assertions.assertEquals(t1.teamName, team!!.teamName)
+	}
+
+	@Test
+	fun getTeamNotFound() {
+		try {
+			webClient.get()
+				.uri("$base/${UUID.randomUUID()}")
+				.header("Authorization",getToken(teamAToken))
+				.retrieve().bodyToMono(TeamDto::class.java).block()
+			fail("got team infos")
+		}
+		catch (e: WebClientResponseException)
+		{
+			Assertions.assertEquals(404, e.rawStatusCode)
+		}
+	}
+
 	/*
 	* ############# ADD  ################
 	* */
