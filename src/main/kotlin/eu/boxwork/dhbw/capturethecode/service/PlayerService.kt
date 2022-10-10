@@ -148,10 +148,23 @@ class PlayerService(
      * @param id the team id
      * @return all players as list
      * */
+    @Transactional
     fun findByTeam(id: UUID): MutableList<PlayerDto> {
         val players = repo.findByTeamUuid(id)
         val ret: MutableList<PlayerDto> = ArrayList()
         players.forEach { ret.add(it.dto()) }
         return ret
+    }
+
+    /**
+     * returns if the player is member of the team
+     * @param teamID
+     * @param playerID
+     * @return true, if member, else false
+     * */
+    @Transactional
+    fun isTeamMember(teamID: UUID, playerID: UUID): Boolean {
+        val ret = entityManagement.find(Player::class.java, playerID)?: return false
+        return (ret.team.uuid == teamID)
     }
 }

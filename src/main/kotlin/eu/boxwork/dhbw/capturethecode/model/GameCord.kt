@@ -8,14 +8,15 @@ import eu.boxwork.dhbw.capturethecode.enums.Action
 import eu.boxwork.dhbw.capturethecode.enums.PlayerState
 import org.springframework.scheduling.annotation.Scheduled
 import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
 
 class GameCord (
     val teamA: TeamWithMembersDto,
     private val rounds:Int=100
 ) {
-    private val states : MutableMap<UUID, PlayerState> = HashMap()
-    private val actions : MutableMap<UUID, Action> = HashMap()
-    private val targets : MutableMap<UUID, UUID> = HashMap()
+    private val states : MutableMap<UUID, PlayerState> = ConcurrentHashMap()
+    private val actions : MutableMap<UUID, Action> = ConcurrentHashMap()
+    private val targets : MutableMap<UUID, UUID> = ConcurrentHashMap()
 
     private var userWithToken : UUID? = null
     var resultA : Int = 0
@@ -38,8 +39,8 @@ class GameCord (
      * performs this round
      * @return true if game is over
      * */
-    @Scheduled(fixedDelayString = "\${scoring.interval}")
-    private fun performRound(): Boolean
+    //@Scheduled(fixedDelayString = "\${scoring.interval}")
+    fun performRound(): Boolean
     {
         synchronized(this)
         {
@@ -47,6 +48,7 @@ class GameCord (
             {
                 executeActions()
                 score()
+                finishRound()
                 round++
                 if (round>=rounds) {
                    finish()
@@ -56,6 +58,11 @@ class GameCord (
         }
     }
 
+    private fun finishRound() {
+        actions.clear()
+        targets.clear()
+    }
+
     /**
      * executes all actions
      * */
@@ -63,7 +70,7 @@ class GameCord (
     {
         if(userWithToken==null) // no token at the start of the round
         {
-            dropTokenRandomly()
+            userWithToken = dropTokenRandomly()
         }
 
         while(actions.containsKey(userWithToken))
@@ -75,15 +82,9 @@ class GameCord (
             {
                 when(actions.remove(userWithToken))
                 {
-                    Action.PASS -> {
-                        userWithToken = pass(userWithToken!!, targets[userWithToken])
-                    }
-                    Action.PUSH -> {
-                        userWithToken = push(userWithToken!!, targets[userWithToken])
-                    }
-                    Action.GETREADY -> {
-                        states[userWithToken!!]=PlayerState.READY
-                    }
+                    Action.PASS -> userWithToken = pass(userWithToken!!, targets[userWithToken])
+                    Action.PUSH -> userWithToken = push(userWithToken!!, targets[userWithToken])
+                    Action.GETREADY -> states[userWithToken!!]=PlayerState.READY
                     else -> {
                         if (states[userWithToken!!]!=PlayerState.BANNED
                             && states[userWithToken!!]!=PlayerState.ON_GROUND)
@@ -114,7 +115,7 @@ class GameCord (
      * @param target the user that should get the token
      * @return the user who has the token afterwards
      * */
-    private fun pass(userWithTokenIn: UUID, target: UUID?): UUID {
+    private fun pass(userWithTokenIn: UUID, target: UUID?): UUID? {
         if (target==null) // user passes to nowhere
             return dropTokenRandomly()
 
@@ -146,7 +147,7 @@ class GameCord (
      * @param target the target of the pushing
      * @return the player with the flag after pushing
      * */
-    private fun push(source: UUID, target: UUID?) : UUID{
+    private fun push(source: UUID, target: UUID?) : UUID? {
         if (actions.containsKey(source)) actions.remove(source)
         if(target != null)
         {
@@ -169,7 +170,7 @@ class GameCord (
         // see if the target was set as target
         targets.forEach { entry -> if (entry.value==pushedTarget) {
                 if (actions[entry.key]==Action.PUSH) {
-                    push(entry.key, pushedTarget)
+                    userWithToken = push(entry.key, pushedTarget)
                     return true
                 }
             }
@@ -180,7 +181,6 @@ class GameCord (
     /**
      * evaluates which team gets a point
      * */
-    @Scheduled(fixedDelayString = "\${scoring.interval}")
     private fun score()
     {
         if (!gameOver)
@@ -206,6 +206,60 @@ class GameCord (
         {
             this.gameOver = true
             userWithToken = null
+        }
+    }
+
+    /**
+     * method used to perform an action on the cord and evaluates the result
+     * @param user user id
+     * @param action action to be performed
+     * */
+    fun performAction(user: UUID, action: Action): ActionResultDto {
+        synchronized(this)
+        {
+            if (actions.containsKey(user) && actions[user]!=Action.LOOK)
+            {
+                // action != look already set, no new action
+            }
+            else if (states[user]==PlayerState.ON_GROUND || states[user]==PlayerState.BANNED)
+            {
+                // user may only get up
+                if (action==Action.GETREADY) { actions[user] = action }
+                else {
+                    // user sent the wrong action
+                }
+            }
+            else
+            {
+                actions[user] = action
+            }
+
+            val currentAction = actions[user]
+            val targetAction: UUID? = targets[user]
+            val hasFlag = if (userWithToken!=null) userWithToken==targetAction else false
+            val haveFlag = user == userWithToken
+            var targetStates : MutableList<PlayerStateDto>? = null
+
+            if (currentAction==Action.OBSERVE)
+            {
+                // if this action is look, the player gets the infos of the target, but no names, this is always possible
+                targetStates = getTargetStates(false)
+            }
+            else
+            {
+                // no action with looking around
+            }
+
+            return ActionResultDto(
+                round,
+                rounds,
+                states[user]?.name?:PlayerState.UNKNOWN.name,
+                hasFlag,
+                haveFlag,
+                gameOver,
+                null,
+                targetStates
+            )
         }
     }
 
@@ -350,6 +404,7 @@ class GameCord (
                 if (returnName) null else target,
                 if (returnName) player.name else null,
                 states[target]?.name?:PlayerState.UNKNOWN.name,
+                actions[target]?.name?:Action.UNKNOWN.name,
                 target==userWithToken
             )
         } else null
@@ -360,10 +415,10 @@ class GameCord (
      * once the token was lost to "nowhere", we randomly assign it, first to the fetching ones, than to the ready ones
      * @return the new user with the token
      * */
-    private fun dropTokenRandomly(): UUID {
+    private fun dropTokenRandomly(): UUID? {
         var newUser : UUID? = null
         val listFetchingUsers : MutableList<UUID> = ArrayList()
-        states.keys.forEach{ userID  -> if (states[userID]==PlayerState.FETCHING )
+        states.keys.forEach{ userID  -> if (actions[userID]==Action.GRAP || actions[userID]==Action.CATCH )
             listFetchingUsers.add(userID)
         }
 
@@ -388,15 +443,6 @@ class GameCord (
             }
         }
 
-        if (newUser==null)
-        {
-            // lets get randomly a user
-            val listAllUsers : MutableList<UUID> = ArrayList()
-            listAllUsers.addAll(states.keys)
-            listAllUsers.shuffle()
-            newUser = listAllUsers[0]
-        }
-
         return newUser
     }
 
@@ -411,7 +457,19 @@ class GameCord (
             states[it.uuid!!]=PlayerState.READY
         }
 
-        dropTokenRandomly()
+        userWithToken = dropTokenRandomly()
         gameOver = false
+    }
+
+    /**
+     * returns true, if the player has the flag
+     * @param userID the player to check
+     * @return true, if the player has the flag, else false
+     * */
+    fun hasFlag(userID: UUID): Boolean {
+        synchronized(this)
+        {
+            return userWithToken==userID
+        }
     }
 }

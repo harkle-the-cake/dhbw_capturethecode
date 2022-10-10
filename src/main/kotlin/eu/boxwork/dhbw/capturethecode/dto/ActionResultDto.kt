@@ -28,8 +28,8 @@ class ActionResultDto (
     @JsonProperty("gameOver", required = true) val gameOver: Boolean = false,
 
     @Schema(description = "the state of the target player, if looked at.",required = false)
-    @JsonProperty("targetState", required = true) val targetState: PlayerStateDto?,
+    @JsonProperty("targetState", required = false) val targetState: PlayerStateDto?,
 
     @Schema(description = "the state of all players, if looked at.",required = false)
-    @JsonProperty("targetStates", required = true) val targetStates: MutableList<PlayerStateDto>?
+    @JsonProperty("targetStates", required = false) val targetStates: MutableList<PlayerStateDto>?
 )

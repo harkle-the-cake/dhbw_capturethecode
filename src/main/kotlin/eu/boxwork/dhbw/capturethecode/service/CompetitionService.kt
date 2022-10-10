@@ -120,6 +120,9 @@ class CompetitionService(
         if (!competitions.containsKey(cordID)) {
             throw ServiceException(412, "no competition found")
         }
+        else if (!playerService.isTeamMember(teamID, userID)) {
+            throw ServiceException(403, "user ist not part of the team")
+        }
         else
         {
             val c = competitions[cordID]

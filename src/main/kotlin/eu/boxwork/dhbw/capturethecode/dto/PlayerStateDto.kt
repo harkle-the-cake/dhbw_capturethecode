@@ -18,6 +18,9 @@ data class PlayerStateDto (
     @Schema(description = "the player state.",required = true)
     @JsonProperty("state", required = true) val state: String,
 
+    @Schema(description = "the player action.",required = true)
+    @JsonProperty("action", required = true) val action: String,
+
     @Schema(description = "true, if the target has the flag.",required = true)
     @JsonProperty("hasFlag", required = true) val hasFlag: Boolean,
 )

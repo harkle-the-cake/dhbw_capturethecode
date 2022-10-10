@@ -65,14 +65,6 @@ class TrainingService(
         }
     }
 
-    @Throws(ServiceException::class)
-    fun action(teamID: UUID, userID: UUID, action: Action, target: UUID): ActionResultDto {
-        if (!trainings.containsKey(teamID)) {
-            throw ServiceException(412, "team not in training")
-        }
-        return trainings[teamID]!!.performAction(userID, action,target)
-    }
-
     /**
      * returns the current score
      * */
@@ -91,5 +83,62 @@ class TrainingService(
                 training.resultB
             )
         }
+    }
+
+    /**
+     * performs a turn in the training
+     * @return true, if game is over
+     * */
+    @Throws(ServiceException::class)
+    fun turn(teamID: UUID?) : Boolean {
+        if (!trainings.containsKey(teamID)) {
+            throw ServiceException(412, "team not in training")
+        }
+        return trainings[teamID]!!.performRound()
+    }
+
+    @Throws(ServiceException::class)
+    fun action(teamID: UUID, userID: UUID, action: Action): ActionResultDto {
+        if (!trainings.containsKey(teamID)) {
+            throw ServiceException(412, "team not in training")
+        }
+        if (!playerService.isTeamMember(teamID, userID)) {
+            throw ServiceException(403, "user ist not part of the team")
+        }
+        return trainings[teamID]!!.performAction(userID, action)
+    }
+    @Throws(ServiceException::class)
+    fun action(teamID: UUID, userID: UUID, action: Action, target: UUID): ActionResultDto {
+        if (!trainings.containsKey(teamID)) {
+            throw ServiceException(412, "team not in training")
+        }
+        if (!playerService.isTeamMember(teamID, userID)) {
+            throw ServiceException(403, "user ist not part of the team")
+        }
+        return trainings[teamID]!!.performAction(userID, action,target)
+    }
+
+    /**
+     * performs an observation
+     * */
+    @Throws(ServiceException::class)
+    fun observe(teamID: UUID, userID: UUID): ActionResultDto? {
+        if (!trainings.containsKey(teamID)) {
+            throw ServiceException(412, "team not in training")
+        }
+        if (!playerService.isTeamMember(teamID, userID)) {
+            throw ServiceException(403, "user ist not part of the team")
+        }
+        return trainings[teamID]!!.performActionObserve(userID)
+    }
+    /**
+     * checks if the user has the flag
+     * */
+    @Throws(ServiceException::class)
+    fun checkForFlag(teamID: UUID, userID: UUID): Boolean {
+        if (!trainings.containsKey(teamID)) {
+            throw ServiceException(412, "team not in training")
+        }
+        return trainings[teamID]!!.hasFlag(userID)
     }
 }

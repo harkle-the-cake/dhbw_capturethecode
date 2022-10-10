@@ -66,16 +66,16 @@ class TokenSecurityConfiguration(
             .antMatchers(HttpMethod.GET,"/team/*").permitAll()
 
             // TRAINING
-            .antMatchers(HttpMethod.GET, "/training/**").hasAnyRole(RoleType.ADMIN.name,RoleType.PLAYER.name)
-            .antMatchers(HttpMethod.PUT, "/training/**").hasAnyRole(RoleType.ADMIN.name,RoleType.PLAYER.name)
-            .antMatchers(HttpMethod.POST, "/training/**").hasAnyRole(RoleType.ADMIN.name,RoleType.PLAYER.name)
-            .antMatchers(HttpMethod.DELETE, "/training/**").hasAnyRole(RoleType.ADMIN.name,RoleType.PLAYER.name)
+            .antMatchers(HttpMethod.GET, "/training/**").hasAnyRole(RoleType.PLAYER.name)
+            .antMatchers(HttpMethod.PUT, "/training/**").hasAnyRole(RoleType.PLAYER.name)
+            .antMatchers(HttpMethod.POST, "/training/**").hasAnyRole(RoleType.PLAYER.name)
+            .antMatchers(HttpMethod.DELETE, "/training/**").hasAnyRole(RoleType.PLAYER.name)
 
             // COMPETITION
-            .antMatchers(HttpMethod.GET, "/competition/**").hasAnyRole(RoleType.ADMIN.name,RoleType.PLAYER.name)
-            .antMatchers(HttpMethod.PUT, "/competition/**").hasAnyRole(RoleType.ADMIN.name,RoleType.PLAYER.name)
-            .antMatchers(HttpMethod.POST, "/competition/**").hasAnyRole(RoleType.ADMIN.name,RoleType.PLAYER.name)
-            .antMatchers(HttpMethod.DELETE, "/competition/**").hasAnyRole(RoleType.ADMIN.name,RoleType.PLAYER.name)
+            .antMatchers(HttpMethod.GET, "/competition/**").hasAnyRole(RoleType.PLAYER.name)
+            .antMatchers(HttpMethod.PUT, "/competition/**").hasAnyRole(RoleType.PLAYER.name)
+            .antMatchers(HttpMethod.POST, "/competition/**").hasAnyRole(RoleType.PLAYER.name)
+            .antMatchers(HttpMethod.DELETE, "/competition/**").hasAnyRole(RoleType.PLAYER.name)
 
             // ADMIN
             .antMatchers(HttpMethod.GET, "/admin/**").hasRole(RoleType.ADMIN.name)
