@@ -103,10 +103,31 @@ class GameCord (
             {
                 push(it, targets[it])
             }
+            else if (actions[it]==Action.GRAP)
+            {
+                grap(it, targets[it])
+            }
         }
 
         // clear actions
         actions.clear()
+    }
+
+    /**
+     * graps the token flag a user
+     * @param source the current who tries to grep the flag
+     * @param target the user that could have the flag now
+     * */
+    private fun grap(source: UUID, target: UUID?) {
+        if (userWithToken==target && userWithToken!=null)
+        {
+            // grapped sucessfully
+            userWithToken = source
+        }
+        else
+        {
+            // nothing happend at all
+        }
     }
 
     /**

@@ -237,6 +237,42 @@ class TrainingTest (
 	}
 
 	@Test
+	fun performRoundTripGrap() {
+		// check who has the token
+		if (hasFlag(p1)) // p1
+		{
+			performAction(p3, Action.CATCH)
+			performAction(p1, Action.PASS, p3)
+		}
+		else if (hasFlag(p2))
+		{
+			performAction(p3, Action.CATCH)
+			performAction(p2, Action.PASS, p3)
+		}
+
+		// next
+		turn()
+
+		// p3 should have the token now
+		Assertions.assertTrue(hasFlag(p3))
+
+		// pass back
+		performAction(p1, Action.GRAP, p3)
+
+		// next
+		turn()
+
+		// p1 should have the token now
+		Assertions.assertTrue(hasFlag(p1))
+
+		// next
+		turn()
+
+		// score = 3, since 3 rounds
+		score(3)
+	}
+
+	@Test
 	fun performRoundTripPassingIntercept1() {
 		// check who has the token
 		if (hasFlag(p1)) // p1
