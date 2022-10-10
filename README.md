@@ -56,10 +56,10 @@ A player may pass the flag/code to another player using a pass action.
 The other player must use a fetch action in the same turn to get the flag/code.
 
 ### capture the flag/code
-If a flag/code is passed an opponent may get the flag/code with grap action targetting the player who posses the flag/code 
-or the player who will get the flag during a handover. 
+If a flag/code is passed an opponent may get the flag/code with grap action targetting the player who is target of the handover.
 This is called interception.
 If a flag/code is NOT passed. The opponent may also get the code performing a grap action targetting the player who posses the flag/code.
+(!) Grapping without interception takes place AFTER a handover; therefore opponent needs to decide who to target.
 
 ### loss of flag/code
 A flag/code may be lost if:

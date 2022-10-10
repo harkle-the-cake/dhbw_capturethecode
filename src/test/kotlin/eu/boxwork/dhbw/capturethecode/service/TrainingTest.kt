@@ -300,8 +300,8 @@ class TrainingTest (
 		// next
 		turn()
 
-		// p1 should have the token now
-		Assertions.assertTrue(hasFlag(p2))
+		// p1 should have the token now, since targetting the wrong user
+		Assertions.assertTrue(hasFlag(p1))
 
 		// next
 		turn()

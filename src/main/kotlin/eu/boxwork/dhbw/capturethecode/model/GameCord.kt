@@ -141,7 +141,7 @@ class GameCord (
             return dropTokenRandomly()
 
         // see if the token is intercepted
-        targets.forEach { entry -> if (entry.value==userWithTokenIn || entry.value==target) {
+        targets.forEach { entry -> if (entry.value==target) { // only the target may be intercepted
                 if (actions[entry.key]==Action.GRAP) {
                     // token intercepted !
                     actions.remove(entry.key)
