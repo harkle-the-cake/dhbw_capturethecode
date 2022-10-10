@@ -9,6 +9,12 @@ import java.util.*
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 class ActionResultDto (
+    @Schema(description = "the current round.",required = true)
+    @JsonProperty("round", required = true) val round: Int,
+
+    @Schema(description = "the maximum rounds.",required = true)
+    @JsonProperty("maxRound", required = true) val maxRound: Int,
+
     @Schema(description = "the player state of the acting player.",required = true)
     @JsonProperty("state", required = true) val state: String,
 
@@ -19,5 +25,11 @@ class ActionResultDto (
     @JsonProperty("haveFlag", required = true) val haveFlag: Boolean,
 
     @Schema(description = "true, if the game is over.",required = true)
-    @JsonProperty("gameOver", required = true) val gameOver: Boolean = false
+    @JsonProperty("gameOver", required = true) val gameOver: Boolean = false,
+
+    @Schema(description = "the state of the target player, if looked at.",required = false)
+    @JsonProperty("targetState", required = true) val targetState: PlayerStateDto?,
+
+    @Schema(description = "the state of all players, if looked at.",required = false)
+    @JsonProperty("targetStates", required = true) val targetStates: MutableList<PlayerStateDto>?
 )

@@ -93,7 +93,7 @@ class TrainingController(
     fun action(auth: Authentication,
                @PathVariable(value = "userID") userID: UUID,
                @PathVariable(value = "action") actionString: String,
-               @PathVariable(value = "targetID") targetID: UUID?
+               @PathVariable(value = "targetID") targetID: UUID
     ) : ResponseEntity<ActionResultDto> {
         val action = Action.valueOf(actionString)
         val teamID = UUID.fromString(auth.name)

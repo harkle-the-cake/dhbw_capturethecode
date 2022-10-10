@@ -116,7 +116,7 @@ class CompetitionService(
      * perform a player action
      * */
     @Throws(ServiceException::class)
-    fun action(cordID: UUID, teamID: UUID, userID: UUID, action: Action, target: UUID?): ActionResultDto {
+    fun action(cordID: UUID, teamID: UUID, userID: UUID, action: Action, target: UUID): ActionResultDto {
         if (!competitions.containsKey(cordID)) {
             throw ServiceException(412, "no competition found")
         }

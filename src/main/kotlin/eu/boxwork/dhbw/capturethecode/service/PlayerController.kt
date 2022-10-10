@@ -77,8 +77,9 @@ class PlayerController(
         @io.swagger.v3.oas.annotations.parameters.RequestBody(description =
         "the new player to add.", required = true, content = [Content(
         schema = Schema(implementation = PlayerDto::class))]) @Valid @RequestBody player: PlayerDto
-    ) : ResponseEntity.BodyBuilder {
-        return ResponseEntity.created(URI.create("/player/${playerService.add(player).uuid}"))
+    ) : ResponseEntity<UUID> {
+        val ret = playerService.add(player)
+        return ResponseEntity.status(HttpStatus.CREATED).body(ret.uuid)
     }
 
     @Operation(summary = "Changes a player",
@@ -116,7 +117,7 @@ class PlayerController(
         ApiResponse(responseCode = "404", description = "player not existing", content = [Content()])
     ]
     )
-    @PostMapping("/{id}")
+    @DeleteMapping("/{id}")
     fun deletePlayer(
                    @PathVariable(value = "id") id: UUID,
                    @RequestHeader(value = "Authorization") token: String

@@ -1,6 +1,7 @@
 package eu.boxwork.dhbw.capturethecode.security
 
 import eu.boxwork.dhbw.capturethecode.dto.TeamDto
+import eu.boxwork.dhbw.capturethecode.enums.RoleType
 import org.springframework.security.authentication.dao.AbstractUserDetailsAuthenticationProvider
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.userdetails.UserDetails
@@ -26,21 +27,39 @@ class TokenAuthenticationProvider(
         userName: String?,
         usernamePasswordAuthenticationToken: UsernamePasswordAuthenticationToken,
     ): UserDetails {
-        if (userName==null || userName.isEmpty()) throw UsernameNotFoundException("user name not set")
+        if (userName.isNullOrEmpty()) throw UsernameNotFoundException("user name not set")
         val token = usernamePasswordAuthenticationToken.credentials as String
-        if (token==null || token.isEmpty()) throw UsernameNotFoundException("login token not set")
-        if (usernamePasswordAuthenticationToken.details == null) throw UsernameNotFoundException("login token details not set")
+        if (token.isEmpty()) throw UsernameNotFoundException("login token not set")
         try {
-            return TokenUserDetails(
-                UUID.fromString(userName),
-                token,
-                usernamePasswordAuthenticationToken.authorities,
-                usernamePasswordAuthenticationToken.details as TeamDto
-            )
+            if (isAdmin(usernamePasswordAuthenticationToken))
+            {
+                return TokenUserDetails(
+                    UUID.randomUUID(),
+                    token,
+                    usernamePasswordAuthenticationToken.authorities,
+                    null
+                )
+            }
+            else
+            {
+                if (usernamePasswordAuthenticationToken.details == null) throw UsernameNotFoundException("login token details not set")
+                return TokenUserDetails(
+                    UUID.fromString(userName),
+                    token,
+                    usernamePasswordAuthenticationToken.authorities,
+                    usernamePasswordAuthenticationToken.details as TeamDto
+                )
+            }
         } catch (e: Exception)
         {
             throw UsernameNotFoundException("token not parsed: $e")
         }
 
+    }
+
+    private fun isAdmin(usernamePasswordAuthenticationToken: UsernamePasswordAuthenticationToken): Boolean {
+        return usernamePasswordAuthenticationToken.authorities.any {
+            it.authority=="ROLE_"+RoleType.ADMIN
+        }
     }
 }

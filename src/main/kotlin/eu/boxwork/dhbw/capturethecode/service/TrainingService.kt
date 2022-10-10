@@ -66,7 +66,7 @@ class TrainingService(
     }
 
     @Throws(ServiceException::class)
-    fun action(teamID: UUID, userID: UUID, action: Action, target: UUID?): ActionResultDto {
+    fun action(teamID: UUID, userID: UUID, action: Action, target: UUID): ActionResultDto {
         if (!trainings.containsKey(teamID)) {
             throw ServiceException(412, "team not in training")
         }

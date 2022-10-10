@@ -33,6 +33,11 @@ dependencies {
 	runtimeOnly("com.h2database:h2")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("org.awaitility:awaitility:4.2.0")
+
+	testImplementation("io.projectreactor:reactor-test")
+	// https://mvnrepository.com/artifact/org.springframework.security/spring-security-test
+	testImplementation("org.springframework.security:spring-security-test:5.7.3")
+	testImplementation("org.springframework.boot:spring-boot-starter-webflux")
 }
 
 tasks.withType<KotlinCompile> {

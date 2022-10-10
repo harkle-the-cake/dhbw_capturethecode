@@ -15,7 +15,7 @@ import org.springframework.scheduling.annotation.EnableScheduling
 
 @EntityScan("eu.boxwork.dhbw.capturethecode.model")
 @ComponentScan(
-	"eu.boxwork.dhbw.capturethecode.services",
+	"eu.boxwork.dhbw.capturethecode.service",
 	"eu.boxwork.dhbw.capturethecode.security",
 	"eu.boxwork.dhbw.capturethecode.components")
 @OpenAPIDefinition(info = Info(title = "Capture Code API", version = "(see endpoint /base/info)",

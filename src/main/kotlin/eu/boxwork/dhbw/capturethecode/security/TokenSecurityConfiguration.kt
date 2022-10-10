@@ -1,8 +1,7 @@
 package eu.boxwork.dhbw.capturethecode.security
 
 import eu.boxwork.dhbw.capturethecode.enums.RoleType
-import eu.boxwork.dhbw.capturethecode.service.PlayerRepository
-import eu.boxwork.dhbw.capturethecode.service.TeamRepository
+import eu.boxwork.dhbw.capturethecode.service.repo.TeamRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
@@ -35,10 +34,12 @@ class TokenSecurityConfiguration(
 )
     : WebSecurityConfigurerAdapter() {
     private val PROTECTED_URLS: RequestMatcher = OrRequestMatcher(
-        AntPathRequestMatcher("/admin/**"),
+        AntPathRequestMatcher("/admin/*"),
+        AntPathRequestMatcher("/team"),
+        AntPathRequestMatcher("/team/*"),
         AntPathRequestMatcher("/competition/**"),
         AntPathRequestMatcher("/training/**"),
-        AntPathRequestMatcher("/player/**")
+        AntPathRequestMatcher("/player/*")
     )
 
     override fun configure(auth: AuthenticationManagerBuilder) {
@@ -57,8 +58,10 @@ class TokenSecurityConfiguration(
             .authorizeRequests()
             //.requestMatchers(PROTECTED_URLS).authenticated() // allows all roles
             // OPEN INTERFACES
+            .antMatchers(HttpMethod.GET,"/error").permitAll()
             .antMatchers(HttpMethod.GET,"/spectator/**").permitAll()
-            .antMatchers(HttpMethod.GET,"/team/**").permitAll()
+            .antMatchers(HttpMethod.GET,"/team").permitAll()
+            .antMatchers(HttpMethod.GET,"/team/*").permitAll()
 
             // TRAINING
             .antMatchers(HttpMethod.GET, "/training/**").hasAnyRole(RoleType.ADMIN.name,RoleType.PLAYER.name)
@@ -77,6 +80,11 @@ class TokenSecurityConfiguration(
             .antMatchers(HttpMethod.POST, "/admin/**").hasRole(RoleType.ADMIN.name)
             .antMatchers(HttpMethod.PUT, "/admin/**").hasRole(RoleType.ADMIN.name)
             .antMatchers(HttpMethod.DELETE, "/admin/**").hasRole(RoleType.ADMIN.name)
+
+            // TEAM
+            .antMatchers(HttpMethod.POST, "/team/**").hasAnyRole(RoleType.ADMIN.name,RoleType.PLAYER.name)
+            .antMatchers(HttpMethod.PUT, "/team/**").hasAnyRole(RoleType.ADMIN.name)
+            .antMatchers(HttpMethod.DELETE, "/team/**").hasAnyRole(RoleType.ADMIN.name)
 
             // PLAYER
             .antMatchers(HttpMethod.GET, "/player/**").hasAnyRole(RoleType.ADMIN.name,RoleType.PLAYER.name)

@@ -1,6 +1,8 @@
 package eu.boxwork.dhbw.capturethecode.model
 
 import eu.boxwork.dhbw.capturethecode.dto.ActionResultDto
+import eu.boxwork.dhbw.capturethecode.dto.PlayerDto
+import eu.boxwork.dhbw.capturethecode.dto.PlayerStateDto
 import eu.boxwork.dhbw.capturethecode.dto.TeamWithMembersDto
 import eu.boxwork.dhbw.capturethecode.enums.Action
 import eu.boxwork.dhbw.capturethecode.enums.PlayerState
@@ -9,15 +11,19 @@ import java.util.UUID
 
 class GameCord (
     val teamA: TeamWithMembersDto,
-    private val states : MutableMap<UUID, PlayerState> = HashMap(),
-    private var userWithToken : UUID? = null,
-    var resultA : Int = 0,
-    var resultB : Int = 0,
-    private var gameOver : Boolean = true
+    private val rounds:Int=100
 ) {
-    var teamB: TeamWithMembersDto? = null
-    private val rounds=100
+    private val states : MutableMap<UUID, PlayerState> = HashMap()
+    private val actions : MutableMap<UUID, Action> = HashMap()
+    private val targets : MutableMap<UUID, UUID> = HashMap()
+
+    private var userWithToken : UUID? = null
+    var resultA : Int = 0
+    var resultB : Int = 0
+    private var gameOver : Boolean = true
+
     private var round=0
+    var teamB: TeamWithMembersDto? = null
     /**
      * initialises the cord with the first team right at the beginning
      * */
@@ -29,36 +35,165 @@ class GameCord (
     }
 
     /**
-     * evaluates which team gets a point
+     * performs this round
      * @return true if game is over
      * */
     @Scheduled(fixedDelayString = "\${scoring.interval}")
-    private fun score(): Boolean
+    private fun performRound(): Boolean
     {
         synchronized(this)
         {
             if (!gameOver)
             {
-                if (teamA.teamMembers.any { playerDto -> playerDto.uuid == userWithToken })                resultA++
-                else if (teamB?.teamMembers?.any { playerDto -> playerDto.uuid == userWithToken } == true) resultB++
-                else
-                {
-                    // no team scores
-                }
-                if(userWithToken==null)
-                {
-                    dropTokenRandomly()
-                }
+                executeActions()
+                score()
                 round++
-                if (round>rounds)
-                {
-                    finish()
+                if (round>=rounds) {
+                   finish()
                 }
-            }
-            else{
-                // game is over
             }
             return gameOver
+        }
+    }
+
+    /**
+     * executes all actions
+     * */
+    private fun executeActions()
+    {
+        if(userWithToken==null) // no token at the start of the round
+        {
+            dropTokenRandomly()
+        }
+
+        while(actions.containsKey(userWithToken))
+        {
+            // let's check if the user is pushed before doing anything
+            val pushed = getPushed(userWithToken!!)
+
+            if (!pushed)
+            {
+                when(actions.remove(userWithToken))
+                {
+                    Action.PASS -> {
+                        userWithToken = pass(userWithToken!!, targets[userWithToken])
+                    }
+                    Action.PUSH -> {
+                        userWithToken = push(userWithToken!!, targets[userWithToken])
+                    }
+                    Action.GETREADY -> {
+                        states[userWithToken!!]=PlayerState.READY
+                    }
+                    else -> {
+                        if (states[userWithToken!!]!=PlayerState.BANNED
+                            && states[userWithToken!!]!=PlayerState.ON_GROUND)
+                            states[userWithToken!!]=PlayerState.READY
+                    }
+                }
+            }
+            else {
+                // the user was pushed
+            }
+        }
+
+        // all users with the token are handled, check the rest, only pushing may be applied
+        actions.keys.forEach {
+            if (actions[it]==Action.PUSH)
+            {
+                push(it, targets[it])
+            }
+        }
+
+        // clear actions
+        actions.clear()
+    }
+
+    /**
+     * return if token was intercepted
+     * @param userWithTokenIn the current user with token
+     * @param target the user that should get the token
+     * @return the user who has the token afterwards
+     * */
+    private fun pass(userWithTokenIn: UUID, target: UUID?): UUID {
+        if (target==null) // user passes to nowhere
+            return dropTokenRandomly()
+
+        // see if the token is intercepted
+        targets.forEach { entry -> if (entry.value==userWithTokenIn || entry.value==target) {
+                if (actions[entry.key]==Action.GRAP) {
+                    // token intercepted !
+                    actions.remove(entry.key)
+                    states[entry.key] = PlayerState.READY
+                    return entry.key
+                }
+            }
+        }
+
+        states[userWithTokenIn] = PlayerState.READY
+
+        // there is no interception, let's see if the target is ready
+        return if (actions[target]==Action.CATCH || actions[target]==Action.GRAP) {
+            target
+        } else {
+            // not graped, flag somewhere
+            dropTokenRandomly()
+        }
+    }
+
+    /**
+     * method to push a target, source is banned, target is on ground, flag is potentially lost
+     * @param source the pushing player
+     * @param target the target of the pushing
+     * @return the player with the flag after pushing
+     * */
+    private fun push(source: UUID, target: UUID?) : UUID{
+        if (actions.containsKey(source)) actions.remove(source)
+        if(target != null)
+        {
+            if (actions.containsKey(target)) actions.remove(target)
+            // state changed
+            states[target] = PlayerState.ON_GROUND
+            states[source] = PlayerState.BANNED
+        }
+        // if no target, no banned player, flag is dropped anyway
+        // flag lost
+        return dropTokenRandomly()
+    }
+
+    /**
+     * method to check if target is pushed
+     * @param pushedTarget the player that may be pushed
+     * @return true, if pushed, else false
+     * */
+    private fun getPushed(pushedTarget: UUID): Boolean {
+        // see if the target was set as target
+        targets.forEach { entry -> if (entry.value==pushedTarget) {
+                if (actions[entry.key]==Action.PUSH) {
+                    push(entry.key, pushedTarget)
+                    return true
+                }
+            }
+        }
+        return false
+    }
+
+    /**
+     * evaluates which team gets a point
+     * */
+    @Scheduled(fixedDelayString = "\${scoring.interval}")
+    private fun score()
+    {
+        if (!gameOver)
+        {
+            if (teamA.teamMembers.any { playerDto -> playerDto.uuid == userWithToken })                resultA++
+            else if (teamB?.teamMembers?.any { playerDto -> playerDto.uuid == userWithToken } == true) resultB++
+            else
+            {
+                // no team scores
+            }
+        }
+        else{
+            // game is over
         }
     }
 
@@ -80,81 +215,153 @@ class GameCord (
      * @param target the target like the other user
      * @param action action to be performed
      * */
-    fun performAction(user: UUID, action: Action, target: UUID?): ActionResultDto {
+    fun performAction(user: UUID, action: Action, target: UUID): ActionResultDto {
         synchronized(this)
         {
-            if (gameOver)
+            if (actions.containsKey(user) && actions[user]!=Action.LOOK)
             {
-                return ActionResultDto(states[user]!!.name, hasFlag = false, haveFlag = false, gameOver = gameOver) // no seeing anything
+                // action != look already set, no new action
             }
-            // player is banned forever
-            if (states[user]==PlayerState.BANNED_FOREVER)
+            else if (states[user]==PlayerState.ON_GROUND || states[user]==PlayerState.BANNED)
             {
-                return ActionResultDto(states[user]!!.name, false, userWithToken==user, gameOver ) // no seeing anything
-            }
-            // we can evaluate the action
-            when(action)
-            {
-                Action.LOOK -> {}
-                Action.NOTHING -> return ActionResultDto(states[user]!!.name, userWithToken==user, userWithToken==user, gameOver  )
-                Action.GETREADY -> {
-                    states[user] = PlayerState.READY
-                }
-                Action.PUSH -> {
-                    if (target!=null)
-                    {
-                        // penalty, target is on ground and user is banned
-                        states[user]=PlayerState.BANNED
-                        states[target]=PlayerState.ON_GROUND
-                        if (userWithToken==target)
-                        {
-                            userWithToken = null
-                            dropTokenRandomly()
-                        }
-                    }
-                    else{
-                        // nothing changed
-                    }
-                }
-                Action.CATCH -> {
-                    if (states[user]==PlayerState.READY) {
-                        states[user] = PlayerState.FETCHING // user must be ready before
-                    }
-                }
-                Action.GRAP -> {
-                    // another user tries to grap the flag, only possible if ready
-                    if (states[user]==PlayerState.READY && userWithToken==target) {
-                        userWithToken = user
-                    }
-                }
-                Action.PASS -> {
-                    if (states[user]==PlayerState.READY && userWithToken==user)
-                    {
-                        // throwing user must be ready and having the flag
-                        if (target!=null && states[target]==PlayerState.FETCHING) {
-                            userWithToken=target // user ready to fetch the token, we pass it
-                            states[target]=PlayerState.READY // target is ready afterwards
-                        }
-                        else
-                        {
-                            // user passed into nothing, or target was not ready => fail
-                            dropTokenRandomly()
-                        }
-                    }
-                    else
-                    {
-                        // user was not ready or having the token
-                    }
+                // user may only get up
+                if (action==Action.GETREADY) { actions[user] = action }
+                else {
+                    // user sent the wrong action
                 }
             }
-            return ActionResultDto(states[user]!!.name, userWithToken==target, userWithToken==user, gameOver ) // no seeing anything
+            else
+            {
+                actions[user] = action
+                targets[user] = target
+            }
+
+            val currentAction = actions[user]
+            val targetAction: UUID? = targets[user]
+            val hasFlag = if (userWithToken!=null) userWithToken==targetAction else false
+            val haveFlag = user == userWithToken
+            var targetState : PlayerStateDto? = null
+            var targetStates : MutableList<PlayerStateDto>? = null
+
+            if (action==Action.LOOK)
+            {
+                // if this action is look, the player gets the infos of the target, but no names, this is always possible
+                targetState = getTargetState(target, false)
+            }
+            else if (currentAction==Action.OBSERVE)
+            {
+                // if this action is look, the player gets the infos of the target, but no names, this is always possible
+                targetStates = getTargetStates(false)
+            }
+            else
+            {
+                // no action with looking around
+            }
+
+            return ActionResultDto(
+                round,
+                rounds,
+                states[user]?.name?:PlayerState.UNKNOWN.name,
+                hasFlag,
+                haveFlag,
+                gameOver,
+                targetState,
+                targetStates
+                )
         }
     }
 
     /**
-     * once the token was lost to "nowhere", we randomly assign it, first to the fetching ones, than to the ready ones
+     * method used to perform an action on the cord and evaluates the result
+     * @param user user id
      * */
-    private fun dropTokenRandomly() {
+    fun performActionObserve(user: UUID): ActionResultDto? {
+        synchronized(this)
+        {
+            if (actions.containsKey(user))
+            {
+                // action != look already set, no new action
+            }
+            else
+            {
+                actions[user] = Action.OBSERVE
+            }
+
+            if (actions[user]==Action.OBSERVE)
+            {
+                val haveFlag = user == userWithToken
+                val targetStates : MutableList<PlayerStateDto> = getTargetStates(false)
+
+                return ActionResultDto(
+                    round,
+                    rounds,
+                    states[user]?.name?:PlayerState.UNKNOWN.name,
+                    false,
+                    haveFlag,
+                    gameOver,
+                    null,
+                    targetStates
+                )
+            }
+            else return null // first action was not to look around => error
+        }
+    }
+
+    /**
+     * returns the states of all players
+     * @param returnName the name of the user should be returned, instead of the uuid
+     * @return the current player states of all players of this round
+     * */
+    private fun getTargetStates(returnName: Boolean) : MutableList<PlayerStateDto> {
+        val ret : MutableList<PlayerStateDto> = ArrayList()
+        states.keys.forEach { uuid -> getTargetState(uuid, returnName)?.let { ret.add(it) } }
+        return ret
+    }
+
+    /**
+     * returns the state of the target
+     * @param target the user id of the target
+     * @param returnName the name of the user should be returned, instead of the uuid
+     * @return the player state in this round if the player is there
+     * */
+    private fun getTargetState(target: UUID, returnName: Boolean): PlayerStateDto? {
+        var player : PlayerDto? = null
+
+        try {
+            player = teamA.teamMembers.first { playerDto -> playerDto.uuid==target  }
+        }
+        catch (e:Exception)
+        {
+            // no such player
+        }
+
+        if (player==null) {
+            try {
+                player = teamB?.teamMembers?.first { playerDto -> playerDto.uuid==target  }
+            }
+            catch (e:Exception)
+            {
+                // no such player
+            }
+        }
+
+        return if(player!=null && states.containsKey(target)) {
+            PlayerStateDto(
+                if (returnName) null else target,
+                if (returnName) player.name else null,
+                states[target]?.name?:PlayerState.UNKNOWN.name,
+                target==userWithToken
+            )
+        } else null
+    }
+
+
+    /**
+     * once the token was lost to "nowhere", we randomly assign it, first to the fetching ones, than to the ready ones
+     * @return the new user with the token
+     * */
+    private fun dropTokenRandomly(): UUID {
+        var newUser : UUID? = null
         val listFetchingUsers : MutableList<UUID> = ArrayList()
         states.keys.forEach{ userID  -> if (states[userID]==PlayerState.FETCHING )
             listFetchingUsers.add(userID)
@@ -163,20 +370,34 @@ class GameCord (
         if (listFetchingUsers.size>0)
         {
             listFetchingUsers.shuffle()
-            userWithToken = listFetchingUsers[0]
+            newUser = listFetchingUsers[0]
         }
 
-        // lets get randomly a user
-        val listActiveUsers : MutableList<UUID> = ArrayList()
-        states.keys.forEach{ userID  -> if (states[userID]==PlayerState.READY )
-            listActiveUsers.add(userID)
-        }
-
-        if (listActiveUsers.size>0)
+        if (newUser==null)
         {
-            listActiveUsers.shuffle()
-            userWithToken = listActiveUsers[0]
+            // lets get randomly a user
+            val listActiveUsers : MutableList<UUID> = ArrayList()
+            states.keys.forEach{ userID  -> if (states[userID]==PlayerState.READY )
+                listActiveUsers.add(userID)
+            }
+
+            if (listActiveUsers.size>0)
+            {
+                listActiveUsers.shuffle()
+                newUser = listActiveUsers[0]
+            }
         }
+
+        if (newUser==null)
+        {
+            // lets get randomly a user
+            val listAllUsers : MutableList<UUID> = ArrayList()
+            listAllUsers.addAll(states.keys)
+            listAllUsers.shuffle()
+            newUser = listAllUsers[0]
+        }
+
+        return newUser
     }
 
     /**

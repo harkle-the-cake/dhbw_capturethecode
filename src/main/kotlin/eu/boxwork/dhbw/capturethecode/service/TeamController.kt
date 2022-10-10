@@ -83,8 +83,9 @@ class TeamController(
         @io.swagger.v3.oas.annotations.parameters.RequestBody(description =
         "the new team to add.", required = true, content = [Content(
         schema = Schema(implementation = TeamDto::class))]) @Valid @RequestBody teamDto: TeamDto
-    ) : ResponseEntity.BodyBuilder {
-        return ResponseEntity.created(URI.create("/team/${teamService.add(teamDto).uuid}"))
+    ) : ResponseEntity<UUID> {
+        val ret = teamService.add(teamDto)
+        return ResponseEntity.status(HttpStatus.CREATED).body(ret.uuid)
     }
 
     @Operation(summary = "Changes a team",
@@ -122,13 +123,11 @@ class TeamController(
         ApiResponse(responseCode = "404", description = "team not existing", content = [Content()])
     ]
     )
-    @PostMapping("/{id}")
+    @DeleteMapping("/{id}")
     fun deleteTeam(
-                   @PathVariable(value = "id") id: UUID,
-                   @RequestHeader(value = "Authorization") token: String
+        @PathVariable(value = "id") id: UUID
     ) : ResponseEntity<TeamDto> {
-        val tokenCleaned = token.replace("token","").trim()
-        teamService.delete(tokenCleaned, id)
+        teamService.delete(id)
         return ResponseEntity.noContent().build()
     }
 

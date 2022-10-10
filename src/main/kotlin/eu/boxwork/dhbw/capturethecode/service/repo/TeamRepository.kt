@@ -1,4 +1,4 @@
-package eu.boxwork.dhbw.capturethecode.service
+package eu.boxwork.dhbw.capturethecode.service.repo
 
 import eu.boxwork.dhbw.capturethecode.model.Team
 import org.springframework.data.jpa.repository.JpaRepository

@@ -1,11 +1,9 @@
 package eu.boxwork.dhbw.capturethecode.security
 
 import eu.boxwork.dhbw.capturethecode.enums.RoleType
-import eu.boxwork.dhbw.capturethecode.service.PlayerRepository
-import eu.boxwork.dhbw.capturethecode.service.TeamRepository
+import eu.boxwork.dhbw.capturethecode.service.repo.TeamRepository
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter
 import org.springframework.security.core.context.SecurityContextHolder
 
@@ -56,7 +54,7 @@ class TokenAuthenticationFilter(
                     UUID.randomUUID(),
                     token,
                     authorities)
-                requestAuthentication.details = UUID.randomUUID()
+                requestAuthentication.details = null
             }
             else
             {

@@ -2,6 +2,7 @@ package eu.boxwork.dhbw.capturethecode.service
 
 import eu.boxwork.dhbw.capturethecode.dto.TeamDto
 import eu.boxwork.dhbw.capturethecode.model.Team
+import eu.boxwork.dhbw.capturethecode.service.repo.TeamRepository
 import org.apache.logging.log4j.LogManager
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
@@ -75,10 +76,9 @@ class TeamService(
      * @param uuid the id of the team
      * */
     @Transactional
-    fun delete(token: String, uuid: UUID)
+    fun delete(uuid: UUID)
     {
         val inDB = entityManagement.find(Team::class.java, uuid)?: return
-        if (inDB.teamToken!=token)throw ServiceException(403,"not allowed to delete the team")
         entityManagement.remove(inDB)
     }
 

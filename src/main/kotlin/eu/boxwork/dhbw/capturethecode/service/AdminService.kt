@@ -1,5 +1,7 @@
 package eu.boxwork.dhbw.capturethecode.service
 
+import eu.boxwork.dhbw.capturethecode.service.repo.PlayerRepository
+import eu.boxwork.dhbw.capturethecode.service.repo.TeamRepository
 import org.apache.logging.log4j.LogManager
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service

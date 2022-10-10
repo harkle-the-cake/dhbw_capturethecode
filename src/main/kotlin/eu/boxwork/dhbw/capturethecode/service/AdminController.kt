@@ -66,7 +66,7 @@ class AdminController(
         ApiResponse(responseCode = "401", description = "Not authenticated: user not allowed at all")
     ]
     )
-    @DeleteMapping("/team/\${id}")
+    @DeleteMapping("/team/{id}")
     fun deleteTeam(
         @PathVariable(value = "id") id: UUID
     ) : ResponseEntity<Unit> {
@@ -81,7 +81,7 @@ class AdminController(
         ApiResponse(responseCode = "401", description = "Not authenticated: user not allowed at all")
         ]
     )
-    @DeleteMapping("/team/\${id}/members")
+    @DeleteMapping("/team/{id}/members")
     fun clearMembers(
         @PathVariable(value = "id") id: UUID
     ) : ResponseEntity<Unit> {
@@ -96,7 +96,7 @@ class AdminController(
         ApiResponse(responseCode = "401", description = "Not authenticated: user not allowed at all")
     ]
     )
-    @DeleteMapping("/player/\${id}")
+    @DeleteMapping("/player/{id}")
     fun deletePlayer(
         @PathVariable(value = "id") id: UUID
     ) : ResponseEntity<Unit> {
