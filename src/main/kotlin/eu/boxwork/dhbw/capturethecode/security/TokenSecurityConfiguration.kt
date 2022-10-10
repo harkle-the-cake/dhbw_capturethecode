@@ -39,7 +39,9 @@ class TokenSecurityConfiguration(
         AntPathRequestMatcher("/team/*"),
         AntPathRequestMatcher("/competition/**"),
         AntPathRequestMatcher("/training/**"),
-        AntPathRequestMatcher("/player/*")
+        AntPathRequestMatcher("/player"),
+        AntPathRequestMatcher("/player/*"),
+        AntPathRequestMatcher("/player/**")
     )
 
     override fun configure(auth: AuthenticationManagerBuilder) {
@@ -88,7 +90,7 @@ class TokenSecurityConfiguration(
 
             // PLAYER
             .antMatchers(HttpMethod.GET, "/player/**").hasAnyRole(RoleType.ADMIN.name,RoleType.PLAYER.name)
-            .antMatchers(HttpMethod.PUT, "/player/**").hasAnyRole(RoleType.ADMIN.name,RoleType.PLAYER.name)
+            .antMatchers(HttpMethod.PUT, "/player/**").hasAnyRole(RoleType.PLAYER.name)
             .antMatchers(HttpMethod.POST, "/player/**").hasAnyRole(RoleType.ADMIN.name,RoleType.PLAYER.name)
             .antMatchers(HttpMethod.DELETE, "/player/**").hasAnyRole(RoleType.ADMIN.name,RoleType.PLAYER.name)
 

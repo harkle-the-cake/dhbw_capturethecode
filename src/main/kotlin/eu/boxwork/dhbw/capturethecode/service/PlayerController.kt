@@ -41,6 +41,24 @@ class PlayerController(
         return ResponseEntity.ok(playerService.list())
     }
 
+    @Operation(summary = "List team players",
+        description = "List all existing players for a team.")
+    @ApiResponses(value = [
+        ApiResponse(responseCode = "200", description = "players are available", content = [
+            (Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                schema = Schema(description = "list of player as JSON array", implementation = Team::class)
+            ))]),
+        ApiResponse(responseCode = "400", description = "Bad request: e.g. user id not valid", content = [Content()]),
+        ApiResponse(responseCode = "401", description = "Not authenticated: user not allowed at all", content = [Content()]),
+        ApiResponse(responseCode = "403", description = "Not authorized: user not allowed to get infos", content = [Content()])]
+    )
+    @GetMapping("/team/{id}")
+    fun getTeamsPlayers(
+        @PathVariable(value = "id") id: UUID
+    ) : ResponseEntity<MutableList<PlayerDto>> {
+        return ResponseEntity.ok(playerService.findByTeam(id))
+    }
+
     @Operation(summary = "Get a player by ID",
         description = "Get a player by id.")
     @ApiResponses(value = [

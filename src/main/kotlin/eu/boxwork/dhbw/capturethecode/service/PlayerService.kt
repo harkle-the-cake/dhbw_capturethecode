@@ -6,6 +6,7 @@ import eu.boxwork.dhbw.capturethecode.service.repo.PlayerRepository
 import eu.boxwork.dhbw.capturethecode.service.repo.TeamRepository
 import org.apache.logging.log4j.LogManager
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.util.*
 import javax.persistence.EntityManager
@@ -18,7 +19,8 @@ import kotlin.jvm.Throws
 class PlayerService(
     @PersistenceContext private val entityManagement: EntityManager,
     @Autowired private val repo: PlayerRepository,
-    @Autowired private val teamRepo: TeamRepository
+    @Autowired private val teamRepo: TeamRepository,
+    @Value("\${admin.token}") private val adminToken: String,
 ) {
     private val log = LogManager.getLogger("PlayerService")
     private val max = 100
@@ -68,7 +70,7 @@ class PlayerService(
     fun change(token: String, uuid: UUID, player: PlayerDto) : PlayerDto?
     {
         val ret = entityManagement.find(Player::class.java, uuid)?: throw ServiceException(404,"player not found")
-        if (ret.team.teamToken == token)
+        if (ret.team.teamToken == token || adminToken==token)
         {
             ret.name = player.name
             return ret.dto()
@@ -87,7 +89,7 @@ class PlayerService(
     fun delete(token: String, uuid: UUID)
     {
         val inDB = entityManagement.find(Player::class.java, uuid)?: return
-        if (inDB.team.teamToken!=token)throw ServiceException(403,"not allowed to delete the player")
+        if (inDB.team.teamToken!=token && adminToken!=token)throw ServiceException(403,"not allowed to delete the player")
         entityManagement.remove(inDB)
     }
 
