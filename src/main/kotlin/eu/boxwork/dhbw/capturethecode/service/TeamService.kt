@@ -5,6 +5,7 @@ import eu.boxwork.dhbw.capturethecode.model.Team
 import eu.boxwork.dhbw.capturethecode.service.repo.TeamRepository
 import org.apache.logging.log4j.LogManager
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.util.*
 import javax.persistence.EntityManager
@@ -16,10 +17,10 @@ import kotlin.jvm.Throws
 @Service
 class TeamService(
     @PersistenceContext private val entityManagement: EntityManager,
-    @Autowired private val repo: TeamRepository
+    @Autowired private val repo: TeamRepository,
+    @Value("\${team.count}") private val max: Int,
 ) {
     private val log = LogManager.getLogger("TeamService")
-    private val max = 100
 
     /*
     * CRUD functions

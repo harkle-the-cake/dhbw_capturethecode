@@ -21,9 +21,9 @@ class PlayerService(
     @Autowired private val repo: PlayerRepository,
     @Autowired private val teamRepo: TeamRepository,
     @Value("\${admin.token}") private val adminToken: String,
+    @Value("\${team.players}") private val max: Int,
 ) {
     private val log = LogManager.getLogger("PlayerService")
-    private val max = 100
 
     /*
     * CRUD functions
