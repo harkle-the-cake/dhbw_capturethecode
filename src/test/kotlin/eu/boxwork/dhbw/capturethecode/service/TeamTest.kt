@@ -136,6 +136,49 @@ class TeamTest (
 		Assertions.assertNotNull(uri)
 	}
 
+	@Test
+	fun addNewTeamNoToken() {
+		val toAdd = TeamDto(
+			null,
+			null,
+			"TEAM_C"
+		)
+		try {
+			webClient.put()
+				.uri(base)
+				.header("Authorization", getToken(adminToken))
+				.bodyValue(toAdd)
+				.retrieve().bodyToMono(URI::class.java).block()
+			fail("added team with no token")
+		}
+		catch (e: WebClientResponseException)
+		{
+			Assertions.assertEquals(400, e.rawStatusCode)
+		}
+	}
+
+	@Test
+	fun addNewTeamTwice() {
+		val toAdd = TeamDto(
+			null,
+			"TOKEN",
+			"TEAM_A"
+		)
+		try
+		{
+			webClient.put()
+				.uri(base)
+				.header("Authorization",getToken(adminToken))
+				.bodyValue(toAdd)
+				.retrieve().bodyToMono(URI::class.java).block()
+			fail("added team twice")
+		}
+		catch (e: WebClientResponseException)
+		{
+			Assertions.assertEquals(409, e.rawStatusCode)
+		}
+	}
+
 	/*
 	* ############# CHANGE  ################
 	* */

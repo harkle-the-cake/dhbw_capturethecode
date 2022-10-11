@@ -96,18 +96,6 @@ class TeamService(
     }
 
     /**
-     * returns the team by name
-     * @param name the name of the team
-     * @return the team
-     * */
-    @Transactional
-    fun get(name: String) : TeamDto?
-    {
-        val ret = repo.findByTeamName(name)?: return null
-        return ret.dto()
-    }
-
-    /**
      * clear all teams
      * */
     @Transactional

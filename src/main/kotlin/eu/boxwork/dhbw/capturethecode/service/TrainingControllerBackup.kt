@@ -15,22 +15,20 @@ import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
-import java.net.URI
 import java.util.*
 
-@RestController
-@RequestMapping("/competition")
-class CompetitionController(
-    @Autowired val service: CompetitionService
-    ) {
-/*
-    @Operation(summary = "competition result",
-        description = "returns the current competition scores, will increase each time frame if flag not lost.")
+//@RestController
+//@RequestMapping("/training")
+class TrainingControllerBackup(
+    @Autowired val service: TrainingService
+) {
+    @Operation(summary = "get result",
+        description = "returns the current scores, will increase each time frame if flag not lost.")
     @ApiResponses(value = [
         ApiResponse(responseCode = "200", description = "the score", content = [
-            (Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
-                schema = Schema(description = "the team score", implementation = ScoreDto::class)
-            ))]),
+        (Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+            schema = Schema(description = "the team score", implementation = ScoreDto::class)
+        ))]),
         ApiResponse(responseCode = "400", description = "token not set", content = [Content()]),
         ApiResponse(responseCode = "401", description = "user not allowed at all", content = [Content()]),
         ApiResponse(responseCode = "403", description = "user not authorized, token is wrong", content = [Content()]),
@@ -38,17 +36,17 @@ class CompetitionController(
         ApiResponse(responseCode = "412", description = "team not in training", content = [Content()]),
     ]
     )
-    @GetMapping("/{id}")
-    fun getScore(
-        @PathVariable(value = "id") id: UUID
-    ) : ResponseEntity<ScoreDto> {
-        return ResponseEntity.ok(service.getScore(id))
+    @GetMapping("/{groundID}")
+    fun getScore(auth: Authentication,
+        @PathVariable(value = "groundID") groundID: UUID,) : ResponseEntity<ScoreDto> {
+        val teamID = UUID.fromString(auth.name)
+        return ResponseEntity.ok(service.getScore(groundID,teamID))
     }
 
-    @Operation(summary = "Start a competition",
-        description = "Starts a new competition.")
+    @Operation(summary = "Start a training",
+        description = "Starts a new training.")
     @ApiResponses(value = [
-        ApiResponse(responseCode = "200", description = "competition is started. Another team needs to join."),
+        ApiResponse(responseCode = "200", description = "training is started all states are reset, the UUID of the ground is returned"),
         ApiResponse(responseCode = "400", description = "token not set", content = [Content()]),
         ApiResponse(responseCode = "401", description = "user not allowed at all", content = [Content()]),
         ApiResponse(responseCode = "403", description = "user not authorized, token is wrong", content = [Content()]),
@@ -56,17 +54,17 @@ class CompetitionController(
         ApiResponse(responseCode = "412", description = "team has no team members", content = [Content()]),
     ]
     )
-    @PostMapping("")
-    fun start(auth: Authentication) : ResponseEntity<String> {
+    @PutMapping("")
+    fun start(auth: Authentication) : ResponseEntity<UUID> {
         val teamID = UUID.fromString(auth.name)
-        val id = service.start(teamID)
-        return ResponseEntity.created(URI.create("/competition/$id")).build()
+        val groundID = service.start(teamID)
+        return ResponseEntity.ok(groundID)
     }
 
-    @Operation(summary = "Joins a competition",
-        description = "Joins a competition.")
+    @Operation(summary = "Perform turn",
+        description = "Performs a new turn, automatic rounds are not enabled here.")
     @ApiResponses(value = [
-        ApiResponse(responseCode = "200", description = "competition team may join and the competition starts."),
+        ApiResponse(responseCode = "204", description = "round performed"),
         ApiResponse(responseCode = "400", description = "token not set", content = [Content()]),
         ApiResponse(responseCode = "401", description = "user not allowed at all", content = [Content()]),
         ApiResponse(responseCode = "403", description = "user not authorized, token is wrong", content = [Content()]),
@@ -74,33 +72,32 @@ class CompetitionController(
         ApiResponse(responseCode = "412", description = "team has no team members", content = [Content()]),
     ]
     )
-    @PostMapping("/{id}/join")
-    fun join(auth: Authentication,
-             @PathVariable(value = "id") id: UUID
-    ) : ResponseEntity<Unit> {
+    @PostMapping("/{groundID}/turn")
+    fun performTurn(auth: Authentication,
+                    @PathVariable(value = "groundID") groundID: UUID,) : ResponseEntity<Unit> {
         val teamID = UUID.fromString(auth.name)
-        val id = service.join(id, teamID)
-        return ResponseEntity.ok().build()
+        service.turn(groundID, teamID)
+        return ResponseEntity.noContent().build()
     }
 
-    @Operation(summary = "Stops a competition",
-        description = "Stops a competition. One of the teams may stop the competition.")
+    @Operation(summary = "Stops a training",
+        description = "Stops a training.")
     @ApiResponses(value = [
-        ApiResponse(responseCode = "204", description = "the competition is stopped"),
+        ApiResponse(responseCode = "204", description = "the training is stopped"),
         ApiResponse(responseCode = "400", description = "token not set", content = [Content()]),
         ApiResponse(responseCode = "401", description = "user not allowed at all", content = [Content()]),
         ApiResponse(responseCode = "403", description = "user not authorized, token is wrong", content = [Content()]),
         ApiResponse(responseCode = "404", description = "team not existing or in training", content = [Content()]),
     ]
     )
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{groundID}")
     fun stop(auth: Authentication,
-             @PathVariable(value = "id") id: UUID) : ResponseEntity<Unit> {
+             @PathVariable(value = "groundID") groundID: UUID,
+    ) : ResponseEntity<Unit> {
         val teamID = UUID.fromString(auth.name)
-        service.stop(id,teamID)
+        service.stop(groundID, teamID)
         return ResponseEntity.noContent().build()
     }
-
 
     @Operation(summary = "Check for flag",
         description = "Checks if a player has the flag. The training needs to be started once before.")
@@ -116,12 +113,13 @@ class CompetitionController(
         ApiResponse(responseCode = "412", description = "team is not in training, training not started", content = [Content()]),
     ]
     )
-    @GetMapping("/user/{userID}")
+    @GetMapping("/{groundID}/user/{userID}")
     fun hasFlag(auth: Authentication,
-                @PathVariable(value = "userID") userID: UUID,
+               @PathVariable(value = "groundID") groundID: UUID,
+               @PathVariable(value = "userID") userID: UUID,
     ) : ResponseEntity<Boolean> {
         val teamID = UUID.fromString(auth.name)
-        return ResponseEntity.ok(service.checkForFlag(teamID, userID))
+        return ResponseEntity.ok(service.checkForFlag(groundID, teamID, userID))
     }
 
     @Operation(summary = "Performs an action (no target)",
@@ -138,14 +136,15 @@ class CompetitionController(
         ApiResponse(responseCode = "412", description = "team is not in training, training not started", content = [Content()]),
     ]
     )
-    @PostMapping("/user/{userID}/action/{action}")
+    @PostMapping("/{groundID}/user/{userID}/action/{action}")
     fun actionNoTarget(auth: Authentication,
-                       @PathVariable(value = "userID") userID: UUID,
-                       @PathVariable(value = "action") actionString: String
+               @PathVariable(value = "groundID") groundID: UUID,
+               @PathVariable(value = "userID") userID: UUID,
+               @PathVariable(value = "action") actionString: String
     ) : ResponseEntity<ActionResultDto> {
         val action = Action.valueOf(actionString)
         val teamID = UUID.fromString(auth.name)
-        return ResponseEntity.ok(service.action(teamID, userID, action))
+        return ResponseEntity.ok(service.action(groundID, teamID, userID, action))
     }
     @Operation(summary = "Performs an action",
         description = "Performs any action of the user targeting any player and returns the action result. The training needs to be started once before.")
@@ -161,17 +160,17 @@ class CompetitionController(
         ApiResponse(responseCode = "412", description = "team is not in training, training not started", content = [Content()]),
     ]
     )
-    @PostMapping("/user/{userID}/action/{action}/target/{targetID}")
+    @PostMapping("/{groundID}/user/{userID}/action/{action}/target/{targetID}")
     fun action(auth: Authentication,
+               @PathVariable(value = "groundID") groundID: UUID,
                @PathVariable(value = "userID") userID: UUID,
                @PathVariable(value = "action") actionString: String,
                @PathVariable(value = "targetID") targetID: UUID
     ) : ResponseEntity<ActionResultDto> {
         val action = Action.valueOf(actionString)
         val teamID = UUID.fromString(auth.name)
-        return ResponseEntity.ok(service.action(teamID, userID, action, targetID))
+        return ResponseEntity.ok(service.action(groundID, teamID, userID, action, targetID))
     }
-
 
     /*
     * ###########################
@@ -185,5 +184,11 @@ class CompetitionController(
     @ExceptionHandler(ServiceException::class)
     fun handleException(ex:ServiceException) : ResponseEntity<String>{
         return ResponseEntity.status(ex.code).body(ex.message)
-    }*/
+    }
+
+    @ExceptionHandler(ConcurrentModificationException::class)
+    fun handleException(ex:ConcurrentModificationException) : ResponseEntity<String>{
+        ex.printStackTrace()
+        return ResponseEntity.status(HttpStatus.LOCKED).body("access is locked, retry")
+    }
 }

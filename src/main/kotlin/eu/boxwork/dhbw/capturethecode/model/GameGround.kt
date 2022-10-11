@@ -6,11 +6,10 @@ import eu.boxwork.dhbw.capturethecode.dto.PlayerStateDto
 import eu.boxwork.dhbw.capturethecode.dto.TeamWithMembersDto
 import eu.boxwork.dhbw.capturethecode.enums.Action
 import eu.boxwork.dhbw.capturethecode.enums.PlayerState
-import org.springframework.scheduling.annotation.Scheduled
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 
-class GameCord (
+class GameGround (
     val teamA: TeamWithMembersDto,
     private val rounds:Int=100
 ) {

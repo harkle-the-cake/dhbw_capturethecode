@@ -36,6 +36,10 @@ class TrainingTest (
 	lateinit var p1 : PlayerDto
 	lateinit var p2 : PlayerDto
 	lateinit var p3 : PlayerDto
+	lateinit var p4 : PlayerDto
+
+	var gameIDA = UUID.randomUUID()
+	lateinit var gameIDB : UUID
 
 	@BeforeEach
 	fun initData()
@@ -46,7 +50,7 @@ class TrainingTest (
 		t1 = teamService.add( TeamDto(null, teamAToken, "TEAM_A"))
 		t2 = teamService.add( TeamDto(null, teamBToken, "TEAM_B"))
 
-		playerService.add(PlayerDto(null,"PLAYER_1","TEAM_A"))
+		p4 = playerService.add(PlayerDto(null,"PLAYER_1","TEAM_A"))
 		playerService.add(PlayerDto(null,"PLAYER_2","TEAM_A"))
 
 		p1 = playerService.add(PlayerDto(null,"PLAYER_3","TEAM_B"))
@@ -59,7 +63,7 @@ class TrainingTest (
 	@AfterEach
 	fun tearDown()
 	{
-		trainingService.stop(t2.uuid!!)
+		trainingService.stop(gameIDB, t2.uuid!!)
 	}
 
 	@AfterAll
@@ -78,10 +82,10 @@ class TrainingTest (
 	@Test
 	fun startA() {
 		try {
-			webClient.put()
+			gameIDA = webClient.put()
 				.uri(base)
 				.header("Authorization",getToken(teamAToken))
-				.retrieve().bodyToMono(Unit::class.java).block()
+				.retrieve().bodyToMono(UUID::class.java).block()
 		}
 		catch (e:WebClientResponseException)
 		{
@@ -92,10 +96,10 @@ class TrainingTest (
 	@Test
 	fun startB() {
 		try {
-			webClient.put()
+			gameIDB = webClient.put()
 				.uri(base)
 				.header("Authorization",getToken(teamBToken))
-				.retrieve().bodyToMono(Unit::class.java).block()
+				.retrieve().bodyToMono(UUID::class.java).block()?: fail("no game ID got")
 		}
 		catch (e:WebClientResponseException)
 		{
@@ -107,7 +111,7 @@ class TrainingTest (
 	fun turnNotStarted() {
 		try {
 			webClient.post()
-				.uri("$base/turn")
+				.uri("$base/${gameIDA}/turn")
 				.header("Authorization",getToken(teamAToken))
 				.retrieve().bodyToMono(Unit::class.java).block()
 			fail("performed turn, but not in training")
@@ -122,7 +126,7 @@ class TrainingTest (
 	fun turn() {
 		try {
 			webClient.post()
-				.uri("$base/turn")
+				.uri("$base/${gameIDB}/turn")
 				.header("Authorization",getToken(teamBToken))
 				.retrieve().bodyToMono(Unit::class.java).block()
 		}
@@ -133,10 +137,24 @@ class TrainingTest (
 	}
 
 	@Test
+	fun stopNotStarted() {
+		try {
+			webClient.delete()
+				.uri("$base/${gameIDA}")
+				.header("Authorization",getToken(teamAToken))
+				.retrieve().bodyToMono(Unit::class.java).block()
+			fail("stopped not started game")
+		}
+		catch (e:WebClientResponseException)
+		{
+			Assertions.assertEquals(412,e.rawStatusCode)
+		}
+	}
+
 	fun stop() {
 		try {
 			webClient.delete()
-				.uri(base)
+				.uri("$base/${gameIDB}")
 				.header("Authorization",getToken(teamAToken))
 				.retrieve().bodyToMono(Unit::class.java).block()
 		}
@@ -150,7 +168,7 @@ class TrainingTest (
 	fun score() {
 		try {
 			webClient.get()
-				.uri(base)
+				.uri("$base/${gameIDA}")
 				.header("Authorization",getToken(teamAToken))
 				.retrieve().bodyToMono(ScoreDto::class.java).block()
 			fail("got score but not started")
@@ -161,17 +179,93 @@ class TrainingTest (
 		}
 	}
 
+	@Test
+	fun hasFlagNotStartet() {
+		try {
+			webClient.get()
+				.uri("$base/${gameIDA}/user/${p4.uuid}")
+				.header("Authorization",getToken(teamAToken))
+				.retrieve().bodyToMono(Boolean::class.java).block()
+			fail("action performed")
+		}
+		catch (e: WebClientResponseException)
+		{
+			Assertions.assertEquals(412,e.rawStatusCode)
+		}
+	}
+
+	@Test
+	private fun performAction()
+	{
+		try {
+			 webClient.post()
+				.uri("$base/${gameIDA}/user/${p1.uuid}/action/OBSERVE")
+				.header("Authorization",getToken(teamAToken))
+				.retrieve().bodyToMono(ActionResultDto::class.java).block()
+			fail("action performed")
+		}
+		catch (e: WebClientResponseException)
+		{
+			Assertions.assertEquals(412,e.rawStatusCode)
+		}
+	}
+
+	@Test
+	private fun performAction2()
+	{
+		try {
+			webClient.post()
+				.uri("$base/${gameIDA}/user/${p1.uuid}/action/PUSH/target/${p2.uuid}")
+				.header("Authorization",getToken(teamAToken))
+				.retrieve().bodyToMono(ActionResultDto::class.java).block()
+			fail("action performed")
+		}
+		catch (e: WebClientResponseException)
+		{
+			Assertions.assertEquals(412,e.rawStatusCode)
+		}
+	}
+
+	@Test
+	private fun performActionUserNotPart()
+	{
+		try {
+			webClient.post()
+				.uri("$base/${gameIDA}/user/${p4.uuid}/action/OBSERVE")
+				.header("Authorization",getToken(teamBToken))
+				.retrieve().bodyToMono(ActionResultDto::class.java).block()
+			fail("action performed")
+		}
+		catch (e: WebClientResponseException)
+		{
+			Assertions.assertEquals(403,e.rawStatusCode)
+		}
+	}
+
+	@Test
+	private fun performAction2NotPart()
+	{
+		try {
+			webClient.post()
+				.uri("$base/${gameIDA}/user/${p4.uuid}/action/PUSH/target/${p2.uuid}")
+				.header("Authorization",getToken(teamBToken))
+				.retrieve().bodyToMono(ActionResultDto::class.java).block()
+			fail("action performed")
+		}
+		catch (e: WebClientResponseException)
+		{
+			Assertions.assertEquals(403,e.rawStatusCode)
+		}
+	}
 
 	/*
 	* ############# GET LIST  ################
 	* */
 	@Test
 	fun performRoundTripNoAction() {
-		startA()
-
 		// score = 0
 		val score = webClient.get()
-			.uri(base)
+			.uri("$base/${gameIDB}")
 			.header("Authorization",getToken(teamAToken))
 			.retrieve().bodyToMono(ScoreDto::class.java).block()
 		Assertions.assertNotNull(score)
@@ -179,24 +273,17 @@ class TrainingTest (
 
 		// next
 		webClient.post()
-			.uri("$base/turn")
+			.uri("$base/${gameIDB}/turn")
 			.header("Authorization",getToken(teamAToken))
 			.retrieve().bodyToMono(Unit::class.java).block()
 
 		// score = 1
 		val score2 = webClient.get()
-			.uri(base)
+			.uri("$base/${gameIDB}")
 			.header("Authorization",getToken(teamAToken))
 			.retrieve().bodyToMono(ScoreDto::class.java).block()
 		Assertions.assertNotNull(score2)
 		Assertions.assertEquals(1, score2!!.scoreTeamA)
-
-
-		stop()
-
-		// not in training
-		score()
-
 	}
 
 	@Test
@@ -464,7 +551,7 @@ class TrainingTest (
 	private fun performAction(player: PlayerDto, action: Action): ActionResultDto {
 		try {
 			val ret = webClient.post()
-				.uri("$base/user/${player.uuid}/action/${action.name}")
+				.uri("$base/${gameIDB}/user/${player.uuid}/action/${action.name}")
 				.header("Authorization",getToken(teamBToken))
 				.retrieve().bodyToMono(ActionResultDto::class.java).block()
 
@@ -483,7 +570,7 @@ class TrainingTest (
 	private fun performAction(player: PlayerDto, action: Action, target: PlayerDto): ActionResultDto {
 		try {
 			val ret = webClient.post()
-				.uri("$base/user/${player.uuid}/action/${action.name}/target/${target.uuid}")
+				.uri("$base/${gameIDB}/user/${player.uuid}/action/${action.name}/target/${target.uuid}")
 				.header("Authorization",getToken(teamBToken))
 				.retrieve().bodyToMono(ActionResultDto::class.java).block()
 
@@ -502,7 +589,7 @@ class TrainingTest (
 	private fun hasFlag(player: PlayerDto): Boolean {
 		try {
 			val ret = webClient.get()
-				.uri("$base/user/${player.uuid}")
+				.uri("$base/${gameIDB}/user/${player.uuid}")
 				.header("Authorization",getToken(teamBToken))
 				.retrieve().bodyToMono(Boolean::class.java).block()
 
@@ -521,7 +608,7 @@ class TrainingTest (
 	private fun score(exspectedScore: Int) {
 		try {
 			val ret = webClient.get()
-				.uri(base)
+				.uri("$base/${gameIDB}")
 				.header("Authorization",getToken(teamBToken))
 				.retrieve().bodyToMono(ScoreDto::class.java).block()
 

@@ -191,6 +191,27 @@ class PlayerTest (
 		}
 	}
 
+	@Test
+	fun addNewPlayerTwice() {
+		val toAdd = PlayerDto(
+			null,
+			"PLAYER_1",
+			"TEAM_A"
+		)
+
+		try {
+			webClient.put()
+				.uri(base)
+				.header("Authorization",getToken(teamAToken))
+				.bodyValue(toAdd)
+				.retrieve().bodyToMono(UUID::class.java).block()
+			fail("added player")
+		} catch (e: WebClientResponseException)
+		{
+			Assertions.assertEquals(409,e.rawStatusCode)
+		}
+	}
+
 	/*
 	* ############# CHANGE  ################
 	* */

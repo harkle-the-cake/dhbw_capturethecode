@@ -106,18 +106,6 @@ class PlayerService(
     }
 
     /**
-     * returns the players by name
-     * @param name the name of the players
-     * @return the players
-     * */
-    @Transactional
-    fun get(name: String) : PlayerDto?
-    {
-        val ret = repo.findByName(name)?: return null
-        return ret.dto()
-    }
-
-    /**
      * clear all players
      * */
     @Transactional

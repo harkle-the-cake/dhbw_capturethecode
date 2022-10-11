@@ -17,7 +17,7 @@ A player may perform actions while the team is in training or in competition. Th
 ## Actions
 Each user may perform as many free actions as able, but only one normal action per turn.
 Each action is a separate call to the backend. Once the turn is over, the normal actions are evaluated by the backend.
-
+A target for a action may be any player, own or opponent players.
 
 ### Free Actions
 | Action         | Target needed | Effect                                                        |
@@ -69,3 +69,8 @@ Once the flag/code is lost, the flag/code will be randomly given to:
 - a player who is fetching in this turn
 - a player who is ready in this turn
 A banned player or a player "on the ground" may not fetch such a token.
+
+## Grounds
+There are 2 grounds:
+- Training ground: one team may test the player code; the turns are performed manually
+- Competition ground: two teams will play a defined count or turns. The turns are performed automatically by a timed job.
