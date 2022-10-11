@@ -2,6 +2,7 @@ package eu.boxwork.dhbw.capturethecode.service
 
 import eu.boxwork.dhbw.capturethecode.dto.TeamDto
 import eu.boxwork.dhbw.capturethecode.model.Team
+import eu.boxwork.dhbw.capturethecode.service.repo.PlayerRepository
 import eu.boxwork.dhbw.capturethecode.service.repo.TeamRepository
 import org.apache.logging.log4j.LogManager
 import org.springframework.beans.factory.annotation.Autowired
@@ -18,6 +19,7 @@ import kotlin.jvm.Throws
 class TeamService(
     @PersistenceContext private val entityManagement: EntityManager,
     @Autowired private val repo: TeamRepository,
+    @Autowired private val playerRepository: PlayerRepository,
     @Value("\${team.count}") private val max: Int,
 ) {
     private val log = LogManager.getLogger("TeamService")
@@ -119,5 +121,14 @@ class TeamService(
         val ret: MutableList<TeamDto> = ArrayList()
         teams.forEach { ret.add(it.dto()) }
         return ret
+    }
+
+    /**
+     * clear team players
+     * @param id team id
+     * */
+    @Transactional
+    fun deleteMembers(id: UUID) {
+        playerRepository.findByTeamUuid(id).forEach { player -> playerRepository.delete(player) }
     }
 }

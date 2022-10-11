@@ -13,12 +13,14 @@ import javax.persistence.Id
 import javax.persistence.JoinColumn
 import javax.persistence.ManyToOne
 import javax.persistence.Table
+import javax.validation.Valid
+import javax.validation.constraints.Pattern
 
 @Entity
 @Table(name = "player")
 data class Player(
     @Id @Column(name = "uuid") val uuid: UUID,
-    @Column(name = "name") var name: String,
+    @Pattern(regexp = "\\S{1,20}") @Column(name = "name") var name: String,
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "teamid", nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)

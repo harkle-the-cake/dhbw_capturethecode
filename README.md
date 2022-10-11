@@ -9,10 +9,12 @@ As a separate action (not a free one), a player may observe the whole competitio
 Each team has one token, a name and an ID. The token is used to authenticate while adding players or performing actions.
 A team may add as many players are allowed to the team.
 A team may only be created by an admin.
+A team name can be up to 20 alphanumeric characters.
 
 ## Player
 With the team token, a player may be added to the team until the maximum of players is reached.
 A player may perform actions while the team is in training or in competition. Therefore the team token must be used.
+A player name can be up to 20 alphanumeric characters.
 
 ## Actions
 Each user may perform as many free actions as able, but only one normal action per turn.

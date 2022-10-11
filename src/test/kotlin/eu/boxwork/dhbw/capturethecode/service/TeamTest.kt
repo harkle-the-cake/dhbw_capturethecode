@@ -124,7 +124,7 @@ class TeamTest (
 	fun addNewTeam() {
 		val toAdd = TeamDto(
 			null,
-			"TOKEN",
+			"AABBCCDDEEFF0011AABBCCDDEEFF0011AABBCCDDEEFF0011AABBCCDDEEFF0011",
 			"TEAM_C"
 		)
 		val uri = webClient.put()
@@ -135,6 +135,49 @@ class TeamTest (
 
 		Assertions.assertNotNull(uri)
 	}
+
+	@Test
+	fun addNewTeamInvalidToken() {
+		val toAdd = TeamDto(
+			null,
+			"TOKEN",
+			"TEAM_C"
+		)
+		try {
+			webClient.put()
+				.uri(base)
+				.header("Authorization",getToken(adminToken))
+				.bodyValue(toAdd)
+				.retrieve().bodyToMono(URI::class.java).block()
+			fail("added team")
+		}
+		catch (e: WebClientResponseException)
+		{
+			Assertions.assertEquals(400, e.rawStatusCode)
+		}
+	}
+
+	@Test
+	fun addNewTeamInvalidName() {
+		val toAdd = TeamDto(
+			null,
+			"AABBCCDDEEFF0011AABBCCDDEEFF0011AABBCCDDEEFF0011AABBCCDDEEFF0011",
+			"TEAM123456789012345678901234567890"
+		)
+		try {
+			webClient.put()
+				.uri(base)
+				.header("Authorization",getToken(adminToken))
+				.bodyValue(toAdd)
+				.retrieve().bodyToMono(URI::class.java).block()
+			fail("added team")
+		}
+		catch (e: WebClientResponseException)
+		{
+			Assertions.assertEquals(400, e.rawStatusCode)
+		}
+	}
+
 
 	@Test
 	fun addNewTeamNoToken() {
@@ -161,7 +204,7 @@ class TeamTest (
 	fun addNewTeamTwice() {
 		val toAdd = TeamDto(
 			null,
-			"TOKEN",
+			"AABBCCDDEEFF0011AABBCCDDEEFF0011AABBCCDDEEFF0011AABBCCDDEEFF0011",
 			"TEAM_A"
 		)
 		try
@@ -187,7 +230,7 @@ class TeamTest (
 	fun changeTeam() {
 		val toAdd = TeamDto(
 			null,
-			"TOKEN",
+			null,
 			"TEAM_D"
 		)
 		val team = webClient.post()
@@ -204,7 +247,7 @@ class TeamTest (
 	fun changeTeamTokenInvalid() {
 		val toAdd = TeamDto(
 			null,
-			"TOKEN",
+			null,
 			"TEAM_D"
 		)
 		try {
@@ -224,7 +267,7 @@ class TeamTest (
 	fun changeTeamNotFound() {
 		val toAdd = TeamDto(
 			null,
-			"TOKEN",
+			null,
 			"TEAM_D"
 		)
 		try {
@@ -282,6 +325,21 @@ class TeamTest (
 		catch (e: WebClientResponseException)
 		{
 			Assertions.assertEquals(404, e.rawStatusCode)
+		}
+	}
+
+	@Test
+	fun deleteTeamMembers() {
+		try {
+			webClient.delete()
+				.uri("$base/members")
+				.header("Authorization",getToken(teamAToken))
+				.retrieve().bodyToMono(Unit::class.java).block()
+			Assertions.assertEquals(0,playerService.findByTeam(t1.uuid!!).size)
+		}
+		catch (e: Exception)
+		{
+			fail(e)
 		}
 	}
 }

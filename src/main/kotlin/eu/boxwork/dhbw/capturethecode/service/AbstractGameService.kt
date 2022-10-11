@@ -124,4 +124,9 @@ abstract class AbstractGameService(
         }
         return gameGrounds[groundID]!!.hasFlag(userID)
     }
+
+    fun count(): Int
+    {
+        return gameGrounds.size
+    }
 }

@@ -13,13 +13,15 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
+import org.springframework.security.core.Authentication
+import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.*
-import java.net.URI
 import java.util.*
 import javax.validation.Valid
 
 @RestController
 @RequestMapping("/team")
+@Validated
 class TeamController(
     @Autowired val teamService: TeamService,
     @Autowired val playerService: PlayerService
@@ -130,6 +132,24 @@ class TeamController(
         teamService.delete(id)
         return ResponseEntity.noContent().build()
     }
+
+
+    @Operation(summary = "removes the team members",
+        description = "removes a team.")
+    @ApiResponses(value = [
+        ApiResponse(responseCode = "204", description = "members are cleared"),
+        ApiResponse(responseCode = "401", description = "Not authenticated: user not allowed at all")
+    ]
+    )
+    @DeleteMapping("/members")
+    fun clearMembers(
+        auth: Authentication,
+    ) : ResponseEntity<Unit> {
+        val teamID = UUID.fromString(auth.name)
+        teamService.deleteMembers(teamID)
+        return ResponseEntity.noContent().build()
+    }
+
 
     /*
     * ###########################

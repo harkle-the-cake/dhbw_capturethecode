@@ -171,6 +171,48 @@ class PlayerTest (
 	}
 
 	@Test
+	fun addNewPlayerInvalidTeam() {
+		val toAdd = PlayerDto(
+			null,
+			"newPLAYER",
+			"TEAM123456789012345678901234567890"
+		)
+		try {
+			webClient.put()
+				.uri(base)
+				.header("Authorization",getToken(teamAToken))
+				.bodyValue(toAdd)
+				.retrieve().bodyToMono(UUID::class.java).block()
+			fail("added player")
+		}
+		catch (e: WebClientResponseException)
+		{
+			Assertions.assertEquals(400, e.rawStatusCode)
+		}
+	}
+
+	@Test
+	fun addNewPlayerInvalidName() {
+		val toAdd = PlayerDto(
+			null,
+			"newPLATEAM123456789012345678901234567890YER",
+			"TEAM_A"
+		)
+		try {
+			webClient.put()
+				.uri(base)
+				.header("Authorization",getToken(teamAToken))
+				.bodyValue(toAdd)
+				.retrieve().bodyToMono(UUID::class.java).block()
+			fail("added player")
+		}
+		catch (e: WebClientResponseException)
+		{
+			Assertions.assertEquals(400, e.rawStatusCode)
+		}
+	}
+
+	@Test
 	fun addNewPlayerNotAllowed() {
 		val toAdd = PlayerDto(
 			null,

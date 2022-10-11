@@ -29,36 +29,6 @@ class AdminService(
     }
 
     /**
-     * clear team
-     * @param id team id
-     * */
-    @Transactional
-    fun deleteTeam(id: UUID) {
-        repoPlayer.findByTeamUuid(id).forEach { player -> repoPlayer.delete(player) }
-        val teamRet = repoTeam.findById(id)
-        if (teamRet.isPresent) repoTeam.delete(teamRet.get())
-    }
-
-    /**
-     * clear player
-     * @param id player id
-     * */
-    @Transactional
-    fun deletePlayer(id: UUID) {
-        val ret = repoPlayer.findById(id)
-        if (ret.isPresent) repoPlayer.delete(ret.get())
-    }
-
-    /**
-     * clear team players
-     * @param id team id
-     * */
-    @Transactional
-    fun deleteMembers(id: UUID) {
-        repoPlayer.findByTeamUuid(id).forEach { player -> repoPlayer.delete(player) }
-    }
-
-    /**
      * clear team players
      * @param id team id
      * */

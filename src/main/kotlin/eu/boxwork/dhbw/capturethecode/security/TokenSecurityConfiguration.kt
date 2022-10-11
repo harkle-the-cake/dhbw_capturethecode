@@ -86,6 +86,7 @@ class TokenSecurityConfiguration(
             // TEAM
             .antMatchers(HttpMethod.POST, "/team/**").hasAnyRole(RoleType.ADMIN.name,RoleType.PLAYER.name)
             .antMatchers(HttpMethod.PUT, "/team/**").hasAnyRole(RoleType.ADMIN.name)
+            .antMatchers(HttpMethod.DELETE, "/team/members").hasAnyRole(RoleType.PLAYER.name)
             .antMatchers(HttpMethod.DELETE, "/team/**").hasAnyRole(RoleType.ADMIN.name)
 
             // PLAYER

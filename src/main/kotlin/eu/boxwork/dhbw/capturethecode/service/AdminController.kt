@@ -58,49 +58,4 @@ class AdminController(
         adminService.clearCompetitions()
         return ResponseEntity.noContent().build()
     }
-
-    @Operation(summary = "removes a team",
-        description = "removes a team.")
-    @ApiResponses(value = [
-        ApiResponse(responseCode = "204", description = "team removed"),
-        ApiResponse(responseCode = "401", description = "Not authenticated: user not allowed at all")
-    ]
-    )
-    @DeleteMapping("/team/{id}")
-    fun deleteTeam(
-        @PathVariable(value = "id") id: UUID
-    ) : ResponseEntity<Unit> {
-        adminService.deleteTeam(id)
-        return ResponseEntity.noContent().build()
-    }
-
-    @Operation(summary = "removes the team members",
-        description = "removes a team.")
-    @ApiResponses(value = [
-        ApiResponse(responseCode = "204", description = "members are cleared"),
-        ApiResponse(responseCode = "401", description = "Not authenticated: user not allowed at all")
-        ]
-    )
-    @DeleteMapping("/team/{id}/members")
-    fun clearMembers(
-        @PathVariable(value = "id") id: UUID
-    ) : ResponseEntity<Unit> {
-        adminService.deleteMembers(id)
-        return ResponseEntity.noContent().build()
-    }
-
-    @Operation(summary = "removes a player",
-        description = "removes a player.")
-    @ApiResponses(value = [
-        ApiResponse(responseCode = "204", description = "player is deleted"),
-        ApiResponse(responseCode = "401", description = "Not authenticated: user not allowed at all")
-    ]
-    )
-    @DeleteMapping("/player/{id}")
-    fun deletePlayer(
-        @PathVariable(value = "id") id: UUID
-    ) : ResponseEntity<Unit> {
-        adminService.deletePlayer(id)
-        return ResponseEntity.noContent().build()
-    }
 }
