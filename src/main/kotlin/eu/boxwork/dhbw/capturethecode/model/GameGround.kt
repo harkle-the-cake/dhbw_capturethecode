@@ -8,6 +8,7 @@ import eu.boxwork.dhbw.capturethecode.enums.Action
 import eu.boxwork.dhbw.capturethecode.enums.PlayerState
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ConcurrentLinkedDeque
 
 class GameGround (
     val teamA: TeamWithMembersDto,
@@ -16,6 +17,8 @@ class GameGround (
     private val states : MutableMap<UUID, PlayerState> = ConcurrentHashMap()
     private val actions : MutableMap<UUID, Action> = ConcurrentHashMap()
     private val targets : MutableMap<UUID, UUID> = ConcurrentHashMap()
+    private val players : MutableMap<UUID, PlayerDto> = ConcurrentHashMap()
+    val events : MutableCollection<Event> = ConcurrentLinkedDeque()
 
     private var userWithToken : UUID? = null
     var resultA : Int = 0
@@ -31,6 +34,7 @@ class GameGround (
     {
         teamA.teamMembers.forEach{
             states[it.uuid!!]=PlayerState.READY
+            players[it.uuid] = it
         }
     }
 
@@ -93,6 +97,7 @@ class GameGround (
             }
             else {
                 // the user was pushed
+                events.add(Event(round, players[userWithToken]?.name,null, "Was pushed. And lost flag."))
             }
         }
 
@@ -122,6 +127,7 @@ class GameGround (
         {
             // grapped sucessfully
             userWithToken = source
+            events.add(Event(round, players[source]?.name,players[target]?.name, "player grapped code"))
         }
         else
         {
@@ -145,6 +151,7 @@ class GameGround (
                     // token intercepted !
                     actions.remove(entry.key)
                     states[entry.key] = PlayerState.READY
+                    events.add(Event(round, players[entry.key]?.name,players[target]?.name, "player intercepted code"))
                     return entry.key
                 }
             }
@@ -154,6 +161,7 @@ class GameGround (
 
         // there is no interception, let's see if the target is ready
         return if (actions[target]==Action.CATCH || actions[target]==Action.GRAP) {
+            events.add(Event(round, players[userWithTokenIn]?.name,players[target]?.name, "player passed code to another one"))
             target
         } else {
             // not graped, flag somewhere
@@ -175,6 +183,7 @@ class GameGround (
             // state changed
             states[target] = PlayerState.ON_GROUND
             states[source] = PlayerState.BANNED
+            events.add(Event(round, players[source]?.name,players[target]?.name, "player pushed another one"))
         }
         // if no target, no banned player, flag is dropped anyway
         // flag lost
@@ -244,7 +253,10 @@ class GameGround (
             else if (states[user]==PlayerState.ON_GROUND || states[user]==PlayerState.BANNED)
             {
                 // user may only get up
-                if (action==Action.GETREADY) { actions[user] = action }
+                if (action==Action.GETREADY) {
+                    actions[user] = action
+                    events.add(Event(round, players[user]?.name,null, "gets ready again."))
+                }
                 else {
                     // user sent the wrong action
                 }
@@ -252,6 +264,7 @@ class GameGround (
             else
             {
                 actions[user] = action
+                events.add(Event(round, players[user]?.name,null, "performs action: $action"))
             }
 
             val currentAction = actions[user]
@@ -299,7 +312,10 @@ class GameGround (
             else if (states[user]==PlayerState.ON_GROUND || states[user]==PlayerState.BANNED)
             {
                 // user may only get up
-                if (action==Action.GETREADY) { actions[user] = action }
+                if (action==Action.GETREADY) {
+                    actions[user] = action
+                    events.add(Event(round, players[user]?.name,null, "gets ready again."))
+                }
                 else {
                     // user sent the wrong action
                 }
@@ -308,6 +324,7 @@ class GameGround (
             {
                 actions[user] = action
                 targets[user] = target
+                events.add(Event(round, players[user]?.name,players[target]?.name, "performs action: $action"))
             }
 
             val currentAction = actions[user]
@@ -345,41 +362,6 @@ class GameGround (
         }
     }
 
-    /**
-     * method used to perform an action on the cord and evaluates the result
-     * @param user user id
-     * */
-    fun performActionObserve(user: UUID): ActionResultDto? {
-        synchronized(this)
-        {
-            if (actions.containsKey(user))
-            {
-                // action != look already set, no new action
-            }
-            else
-            {
-                actions[user] = Action.OBSERVE
-            }
-
-            if (actions[user]==Action.OBSERVE)
-            {
-                val haveFlag = user == userWithToken
-                val targetStates : MutableList<PlayerStateDto> = getTargetStates(false)
-
-                return ActionResultDto(
-                    round,
-                    rounds,
-                    states[user]?.name?:PlayerState.UNKNOWN.name,
-                    false,
-                    haveFlag,
-                    gameOver,
-                    null,
-                    targetStates
-                )
-            }
-            else return null // first action was not to look around => error
-        }
-    }
 
     /**
      * returns the states of all players
@@ -462,6 +444,9 @@ class GameGround (
                 newUser = listActiveUsers[0]
             }
         }
+
+
+        events.add(Event(round, null,players[newUser]?.name, "code was randomly set to a new player"))
 
         return newUser
     }
