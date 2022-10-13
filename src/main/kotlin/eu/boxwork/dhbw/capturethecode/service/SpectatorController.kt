@@ -20,9 +20,12 @@ class SpectatorController(
 ) {
 
 
-    @GetMapping(value = ["/","/index.html"])
+    @GetMapping(value = ["","/","/index.html"])
     fun index(): ModelAndView {
-        return ModelAndView("index") //view
+        val model = ModelAndView()
+        model.viewName = "index"
+        model.addObject("baseURL", baseURL)
+        return model
     }
 
     @GetMapping(value = ["/training","/training.html"])
