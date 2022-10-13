@@ -63,6 +63,12 @@ class TokenSecurityConfiguration(
             .antMatchers(HttpMethod.GET,"/ui").permitAll()
             .antMatchers(HttpMethod.GET,"/ui/**").permitAll()
 
+             // OPEN API
+            .antMatchers(HttpMethod.GET,"/v3/api-docs").permitAll()
+            .antMatchers(HttpMethod.GET,"/v3/api-docs/*").permitAll()
+            .antMatchers(HttpMethod.GET,"/swagger-ui.html").permitAll()
+            .antMatchers(HttpMethod.GET,"/swagger-ui/*").permitAll()
+
             // OPEN INTERFACES
             .antMatchers(HttpMethod.GET,"/error").permitAll()
             .antMatchers(HttpMethod.GET,"/team").permitAll()
