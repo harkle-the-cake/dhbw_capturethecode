@@ -25,9 +25,10 @@ class AdminTest (
 	@Autowired val competitionService: CompetitionService,
 	@Value("\${server.port}") val port: Int,
 	@Value("\${admin.token}") val adminToken: String,
+	@Value("\${server.servlet.context-path}") private val baseURL: String,
 )
 {
-	val base = "http://localhost:$port/admin"
+	val base = "http://localhost:$port$baseURL/admin"
 
 	val teamAToken = UUID.randomUUID()!!.toString()
 	val teamBToken = UUID.randomUUID()!!.toString()

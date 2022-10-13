@@ -22,10 +22,11 @@ class TrainingTest (
 	@Autowired val teamService: TeamService,
 	@Autowired val playerService: PlayerService,
 	@Autowired val trainingService: TrainingService,
-	@Value("\${server.port}") val port: Int
+	@Value("\${server.port}") val port: Int,
+	@Value("\${server.servlet.context-path}") private val baseURL: String,
 )
 {
-	val base = "http://localhost:$port/training"
+	val base = "http://localhost:$port$baseURL/training"
 
 	val teamAToken = UUID.randomUUID()!!.toString()
 	val teamBToken = UUID.randomUUID()!!.toString()

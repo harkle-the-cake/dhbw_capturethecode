@@ -1,0 +1,33 @@
+<!DOCTYPE HTML>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <title>CTC - COMPETITIONS</title>
+</head>
+
+<body>
+
+<p>
+    <span>List of Competitions</span>
+</p>
+
+<div th:if="${ not#lists.isEmpty(competitions)}">
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>Team A</th>
+            <th>Team B</th>
+        </tr>
+        <tr th:each="competition : ${competitions}">
+            <td th:text="${competition.id}"></td>
+            <td th:text="${competition.teamA}"></td>
+            <td th:text="${competition.teamB}"></td>
+        </tr>
+    </table>
+</div>
+
+<!-- /.container -->
+</body>
+</html>

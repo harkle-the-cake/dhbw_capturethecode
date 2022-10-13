@@ -59,9 +59,12 @@ class TokenSecurityConfiguration(
             .addFilterBefore(authenticationFilter(), AnonymousAuthenticationFilter::class.java)
             .authorizeRequests()
             //.requestMatchers(PROTECTED_URLS).authenticated() // allows all roles
+            // UI INTERFACES
+            .antMatchers(HttpMethod.GET,"/ui").permitAll()
+            .antMatchers(HttpMethod.GET,"/ui/**").permitAll()
+
             // OPEN INTERFACES
             .antMatchers(HttpMethod.GET,"/error").permitAll()
-            .antMatchers(HttpMethod.GET,"/spectator/**").permitAll()
             .antMatchers(HttpMethod.GET,"/team").permitAll()
             .antMatchers(HttpMethod.GET,"/team/*").permitAll()
 

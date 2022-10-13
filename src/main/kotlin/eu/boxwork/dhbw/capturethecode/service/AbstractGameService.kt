@@ -3,12 +3,13 @@ package eu.boxwork.dhbw.capturethecode.service
 import eu.boxwork.dhbw.capturethecode.dto.ActionResultDto
 import eu.boxwork.dhbw.capturethecode.dto.ScoreDto
 import eu.boxwork.dhbw.capturethecode.dto.TeamWithMembersDto
+import eu.boxwork.dhbw.capturethecode.dto.SpectatedGameGroundDto
 import eu.boxwork.dhbw.capturethecode.enums.Action
 import eu.boxwork.dhbw.capturethecode.model.GameGround
 import org.apache.logging.log4j.LogManager
-import org.springframework.beans.factory.annotation.Autowired
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.collections.ArrayList
 import kotlin.jvm.Throws
 
 abstract class AbstractGameService(
@@ -128,5 +129,20 @@ abstract class AbstractGameService(
     fun count(): Int
     {
         return gameGrounds.size
+    }
+
+    fun listUI(): MutableList<SpectatedGameGroundDto> {
+        val ret : MutableList<SpectatedGameGroundDto> = ArrayList()
+
+        gameGrounds.forEach {
+            ret.add(
+                SpectatedGameGroundDto(
+                    it.key,
+                    it.value.teamA.teamName,
+                    it.value.teamB?.teamName
+                )
+            )
+        }
+        return ret
     }
 }

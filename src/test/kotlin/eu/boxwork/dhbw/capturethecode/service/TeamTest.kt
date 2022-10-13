@@ -21,9 +21,10 @@ class TeamTest (
 	@Autowired val playerService: PlayerService,
 	@Value("\${server.port}") val port: Int,
 	@Value("\${admin.token}") val adminToken: String,
+	@Value("\${server.servlet.context-path}") private val baseURL: String,
 )
 {
-	val base = "http://localhost:$port/team"
+	val base = "http://localhost:$port$baseURL/team"
 
 	val teamAToken = UUID.randomUUID()!!.toString()
 	val teamBToken = UUID.randomUUID()!!.toString()
@@ -115,6 +116,30 @@ class TeamTest (
 		{
 			Assertions.assertEquals(404, e.rawStatusCode)
 		}
+	}
+
+	/*
+	* ############# LOAD  ################
+	* */
+	@Test
+	fun loadTeamsDefinition() {
+		teamService.clear()
+		teamService.loadTeamDefinition()
+		val list = teamService.listWithSecret()
+		Assertions.assertEquals(2, list.size)
+		Assertions.assertEquals("d8b7c387-d27b-4d1d-af1e-a3e2b704bf31",
+			list.first { teamDto -> teamDto.uuid==UUID.fromString("d8b7c387-d27b-4d1d-af1e-a3e2b704bf31") }.uuid.toString())
+		Assertions.assertEquals("b74c963cc05038a215c7c9bfb10a32a078a45bfb69e23f6750b3aebcdb4ff822",
+			list.first { teamDto -> teamDto.uuid==UUID.fromString("d8b7c387-d27b-4d1d-af1e-a3e2b704bf31") }.teamToken)
+		Assertions.assertEquals("TEAM_A",
+			list.first { teamDto -> teamDto.uuid==UUID.fromString("d8b7c387-d27b-4d1d-af1e-a3e2b704bf31") }.teamName)
+
+		Assertions.assertEquals("f3e5dc72-d318-4a78-86dc-560db901dad1",
+			list.first { teamDto -> teamDto.uuid==UUID.fromString("f3e5dc72-d318-4a78-86dc-560db901dad1") }.uuid.toString())
+		Assertions.assertEquals("8630c6b38f6522ad067462739026eeb98361d5de89ac91e6f787ab028e4eebf6",
+			list.first { teamDto -> teamDto.uuid==UUID.fromString("f3e5dc72-d318-4a78-86dc-560db901dad1") }.teamToken)
+		Assertions.assertEquals("TEAM_B",
+			list.first { teamDto -> teamDto.uuid==UUID.fromString("f3e5dc72-d318-4a78-86dc-560db901dad1") }.teamName)
 	}
 
 	/*

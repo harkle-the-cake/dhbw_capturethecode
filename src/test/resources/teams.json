@@ -1,0 +1,12 @@
+[
+  {
+   "uuid": "d8b7c387-d27b-4d1d-af1e-a3e2b704bf31",
+   "teamToken": "b74c963cc05038a215c7c9bfb10a32a078a45bfb69e23f6750b3aebcdb4ff822",
+   "teamName": "TEAM_A"
+  },
+  {
+    "uuid": "f3e5dc72-d318-4a78-86dc-560db901dad1",
+    "teamToken": "8630c6b38f6522ad067462739026eeb98361d5de89ac91e6f787ab028e4eebf6",
+    "teamName": "TEAM_B"
+  }
+]

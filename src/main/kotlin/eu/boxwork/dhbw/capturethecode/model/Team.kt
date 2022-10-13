@@ -12,9 +12,10 @@ import javax.validation.constraints.Pattern
 @Table(name = "team")
 data class Team (
     @Id @Column(name = "uuid") val uuid: UUID,
-    @Column(name = "token") val teamToken: String,
+    @Column(name = "token") var teamToken: String,
     @Column(name = "name") var teamName: String
 )
 {
     fun dto() = TeamDto(uuid,null, teamName)
+    fun dtoWithSecret() = TeamDto(uuid,teamToken, teamName)
 }

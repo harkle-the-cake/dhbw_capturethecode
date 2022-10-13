@@ -1,0 +1,31 @@
+<!DOCTYPE HTML>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <title>CTC - TEAMS</title>
+</head>
+
+<body>
+
+<p>
+    <span>List of Teams</span>
+</p>
+
+<div th:if="${ not#lists.isEmpty(teams)}">
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>Team</th>
+        </tr>
+        <tr th:each="team : ${teams}">
+            <td><a th:href="@{'${baseURL}/ui/team?id=' + ${team.id}}" th:text="${team.id}"></a></td>
+            <td><a th:href="@{'${baseURL}/ui/team?id=' + ${team.id}}" th:text="${team.name}"></a></td>
+        </tr>
+    </table>
+</div>
+
+<!-- /.container -->
+</body>
+</html>
