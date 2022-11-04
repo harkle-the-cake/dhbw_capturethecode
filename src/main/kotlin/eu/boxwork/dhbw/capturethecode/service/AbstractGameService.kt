@@ -5,10 +5,12 @@ import eu.boxwork.dhbw.capturethecode.dto.ScoreDto
 import eu.boxwork.dhbw.capturethecode.dto.TeamWithMembersDto
 import eu.boxwork.dhbw.capturethecode.dto.SpectatedGameGroundDto
 import eu.boxwork.dhbw.capturethecode.enums.Action
+import eu.boxwork.dhbw.capturethecode.model.Event
 import eu.boxwork.dhbw.capturethecode.model.GameGround
 import org.apache.logging.log4j.LogManager
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.LinkedTransferQueue
 import kotlin.collections.ArrayList
 import kotlin.jvm.Throws
 
@@ -135,11 +137,14 @@ abstract class AbstractGameService(
         val ret : MutableList<SpectatedGameGroundDto> = ArrayList()
 
         gameGrounds.forEach {
+            val eventsToSet : LinkedTransferQueue<Event> = LinkedTransferQueue()
+            eventsToSet.addAll(it.value.events)
             ret.add(
                 SpectatedGameGroundDto(
                     it.key,
                     it.value.teamA.teamName,
-                    it.value.teamB?.teamName
+                    it.value.teamB?.teamName,
+                    eventsToSet
                 )
             )
         }

@@ -71,8 +71,6 @@ class TokenSecurityConfiguration(
 
             // OPEN INTERFACES
             .antMatchers(HttpMethod.GET,"/error").permitAll()
-            .antMatchers(HttpMethod.GET,"/team").permitAll()
-            .antMatchers(HttpMethod.GET,"/team/*").permitAll()
 
             // TRAINING
             .antMatchers(HttpMethod.GET, "/training/**").hasAnyRole(RoleType.PLAYER.name)
@@ -93,6 +91,8 @@ class TokenSecurityConfiguration(
             .antMatchers(HttpMethod.DELETE, "/admin/**").hasRole(RoleType.ADMIN.name)
 
             // TEAM
+            .antMatchers(HttpMethod.GET,"/team").hasAnyRole(RoleType.ADMIN.name,RoleType.PLAYER.name)
+            .antMatchers(HttpMethod.GET,"/team/*").hasAnyRole(RoleType.ADMIN.name,RoleType.PLAYER.name)
             .antMatchers(HttpMethod.POST, "/team/**").hasAnyRole(RoleType.ADMIN.name,RoleType.PLAYER.name)
             .antMatchers(HttpMethod.PUT, "/team/**").hasAnyRole(RoleType.ADMIN.name)
             .antMatchers(HttpMethod.DELETE, "/team/members").hasAnyRole(RoleType.PLAYER.name)
