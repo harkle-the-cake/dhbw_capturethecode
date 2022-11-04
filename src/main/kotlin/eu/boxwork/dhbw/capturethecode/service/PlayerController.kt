@@ -123,7 +123,7 @@ class PlayerController(
                 "the team infos to set.", required = true, content = [Content(
                     schema = Schema(implementation = TeamDto::class))]) @Valid @RequestBody player: PlayerDto
     ) : ResponseEntity<PlayerDto> {
-        val tokenCleaned = token.replace("token","").trim()
+        val tokenCleaned = token.lowercase().replace("token","").trim().uppercase()
         return ResponseEntity.ok(playerService.change(tokenCleaned, id, player))
     }
 
@@ -142,7 +142,7 @@ class PlayerController(
                    @PathVariable(value = "id") id: UUID,
                    @RequestHeader(value = "Authorization") token: String
     ) : ResponseEntity<Unit> {
-        val tokenCleaned = token.replace("token","").trim()
+        val tokenCleaned = token.lowercase().replace("token","").trim().uppercase()
         playerService.delete(tokenCleaned, id)
         return ResponseEntity.noContent().build()
     }
