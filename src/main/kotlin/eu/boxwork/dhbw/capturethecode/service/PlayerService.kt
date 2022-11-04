@@ -35,7 +35,7 @@ class PlayerService(
      * */
     @Transactional
     @Throws(ServiceException::class)
-    fun add(player: PlayerDto) : PlayerDto
+    fun add(token: String, player: PlayerDto) : PlayerDto
     {
         val cnt = repo.count()
         if (cnt>=max) throw ServiceException(418,"team limit exceeded")
@@ -48,6 +48,9 @@ class PlayerService(
         }
 
         val team = teamRepo.findByTeamName(player.teamName)?:throw ServiceException(412,"player not available")
+
+        if (team.teamToken!=token)throw ServiceException(403,
+            "not authorized to add a player to the team '${player.teamName}'. Token not valid.")
 
         val toAdd = Player(
             uuid = UUID.randomUUID(),

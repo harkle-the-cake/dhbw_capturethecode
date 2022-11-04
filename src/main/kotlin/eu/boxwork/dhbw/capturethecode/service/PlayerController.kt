@@ -94,11 +94,13 @@ class PlayerController(
     )
     @PutMapping("")
     fun addPlayer(
+        @RequestHeader(value = "Authorization") token: String,
         @io.swagger.v3.oas.annotations.parameters.RequestBody(description =
         "the new player to add.", required = true, content = [Content(
         schema = Schema(implementation = PlayerDto::class))]) @Valid @RequestBody player: PlayerDto
     ) : ResponseEntity<UUID> {
-        val ret = playerService.add(player)
+        val tokenCleaned = token.lowercase().replace("token","").trim().uppercase()
+        val ret = playerService.add(tokenCleaned, player)
         return ResponseEntity.status(HttpStatus.CREATED).body(ret.uuid)
     }
 
