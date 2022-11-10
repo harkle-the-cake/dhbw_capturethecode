@@ -42,12 +42,12 @@ class PlayerTest (
 		t1 = teamService.add( TeamDto(null, teamAToken, "TEAM_A"))
 		t2 = teamService.add( TeamDto(null, teamBToken, "TEAM_B"))
 
-		p1 = playerService.add(PlayerDto(null,"PLAYER_1","TEAM_A"))
-		playerService.add(PlayerDto(null,"PLAYER_2","TEAM_A"))
+		p1 = playerService.add(teamAToken,PlayerDto(null,"PLAYER_1","TEAM_A"))
+		playerService.add(teamAToken,PlayerDto(null,"PLAYER_2","TEAM_A"))
 
-		p3 = playerService.add(PlayerDto(null,"PLAYER_3","TEAM_B"))
-		playerService.add(PlayerDto(null,"PLAYER_4","TEAM_B"))
-		playerService.add(PlayerDto(null,"PLAYER_5","TEAM_B"))
+		p3 = playerService.add(teamBToken,PlayerDto(null,"PLAYER_3","TEAM_B"))
+		playerService.add(teamBToken,PlayerDto(null,"PLAYER_4","TEAM_B"))
+		playerService.add(teamBToken,PlayerDto(null,"PLAYER_5","TEAM_B"))
 	}
 
 	@AfterAll
@@ -189,6 +189,27 @@ class PlayerTest (
 		catch (e: WebClientResponseException)
 		{
 			Assertions.assertEquals(400, e.rawStatusCode)
+		}
+	}
+
+	@Test
+	fun addNewPlayerInvalidTeam1() {
+		val toAdd = PlayerDto(
+			null,
+			"newPLAYER",
+			"TEAM_B"
+		)
+		try {
+			webClient.put()
+				.uri(base)
+				.header("Authorization",getToken(teamAToken))
+				.bodyValue(toAdd)
+				.retrieve().bodyToMono(UUID::class.java).block()
+			fail("added player")
+		}
+		catch (e: WebClientResponseException)
+		{
+			Assertions.assertEquals(403, e.rawStatusCode)
 		}
 	}
 

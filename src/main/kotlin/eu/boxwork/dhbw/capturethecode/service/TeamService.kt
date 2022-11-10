@@ -89,8 +89,8 @@ class TeamService(
         }
 
         val toAdd = Team(
-            uuid = UUID.randomUUID(),
-            team.teamToken,
+            team.uuid?:UUID.randomUUID(),
+            team.teamToken.trim().lowercase(),
             team.teamName
         )
         entityManagement.persist(toAdd)

@@ -111,7 +111,7 @@ class TeamController(
                 "the team infos to set.", required = true, content = [Content(
                     schema = Schema(implementation = TeamDto::class))]) @Valid @RequestBody teamDto: TeamDto
     ) : ResponseEntity<TeamDto> {
-        val tokenCleaned = token.lowercase().replace("token","").trim().uppercase()
+        val tokenCleaned = token.lowercase().replace("token","").trim()
         return ResponseEntity.ok(teamService.change(tokenCleaned, id, teamDto))
     }
 

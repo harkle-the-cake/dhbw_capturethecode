@@ -24,10 +24,11 @@ class PlayerService(
     @Value("\${team.players}") private val max: Int,
 ) {
     private val log = LogManager.getLogger("PlayerService")
+    private val adminTokenToUse = adminToken.lowercase()
 
-    /*
-    * CRUD functions
-    * */
+        /*
+        * CRUD functions
+        * */
     /**
      * adds a new player, the uuid will be generated
      * @param player the player to add
@@ -47,18 +48,23 @@ class PlayerService(
             throw ServiceException(409,"player already exists")
         }
 
-        val team = teamRepo.findByTeamName(player.teamName)?:throw ServiceException(412,"player not available")
+        val team = teamRepo.findByTeamName(player.teamName)?:throw ServiceException(412,"team not available")
 
-        if (team.teamToken!=token)throw ServiceException(403,
-            "not authorized to add a player to the team '${player.teamName}'. Token not valid.")
-
-        val toAdd = Player(
-            uuid = UUID.randomUUID(),
-            player.name,
-            team
-        )
-        entityManagement.persist(toAdd)
-        return toAdd.dto()
+        if (team.teamToken==token ||adminTokenToUse==token)
+        {
+            val toAdd = Player(
+                uuid = UUID.randomUUID(),
+                player.name,
+                team
+            )
+            entityManagement.persist(toAdd)
+            return toAdd.dto()
+        }
+        else
+        {
+            throw ServiceException(403,
+                "not authorized to add a player to the team '${player.teamName}'. Token not valid.")
+        }
     }
 
     /**
@@ -73,7 +79,7 @@ class PlayerService(
     fun change(token: String, uuid: UUID, player: PlayerDto) : PlayerDto?
     {
         val ret = entityManagement.find(Player::class.java, uuid)?: throw ServiceException(404,"player not found")
-        if (ret.team.teamToken == token || adminToken==token)
+        if (ret.team.teamToken == token || adminTokenToUse==token)
         {
             ret.name = player.name
             return ret.dto()
@@ -92,7 +98,7 @@ class PlayerService(
     fun delete(token: String, uuid: UUID)
     {
         val inDB = entityManagement.find(Player::class.java, uuid)?: return
-        if (inDB.team.teamToken!=token && adminToken!=token)throw ServiceException(403,"not allowed to delete the player")
+        if (inDB.team.teamToken!=token && adminTokenToUse!=token)throw ServiceException(403,"not allowed to delete the player")
         entityManagement.remove(inDB)
     }
 

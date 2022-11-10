@@ -40,12 +40,12 @@ class TeamTest (
 		t1 = teamService.add( TeamDto(null, teamAToken, "TEAM_A"))
 		t2 = teamService.add( TeamDto(null, teamBToken, "TEAM_B"))
 
-		playerService.add(PlayerDto(null,"PLAYER_1","TEAM_A"))
-		playerService.add(PlayerDto(null,"PLAYER_2","TEAM_A"))
+		playerService.add(teamAToken,PlayerDto(null,"PLAYER_1","TEAM_A"))
+		playerService.add(teamAToken,PlayerDto(null,"PLAYER_2","TEAM_A"))
 
-		playerService.add(PlayerDto(null,"PLAYER_3","TEAM_B"))
-		playerService.add(PlayerDto(null,"PLAYER_4","TEAM_B"))
-		playerService.add(PlayerDto(null,"PLAYER_5","TEAM_B"))
+		playerService.add(teamBToken,PlayerDto(null,"PLAYER_3","TEAM_B"))
+		playerService.add(teamBToken,PlayerDto(null,"PLAYER_4","TEAM_B"))
+		playerService.add(teamBToken,PlayerDto(null,"PLAYER_5","TEAM_B"))
 	}
 
 	@AfterAll

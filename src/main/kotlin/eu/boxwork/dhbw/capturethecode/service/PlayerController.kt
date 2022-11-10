@@ -99,7 +99,7 @@ class PlayerController(
         "the new player to add.", required = true, content = [Content(
         schema = Schema(implementation = PlayerDto::class))]) @Valid @RequestBody player: PlayerDto
     ) : ResponseEntity<UUID> {
-        val tokenCleaned = token.lowercase().replace("token","").trim().uppercase()
+        val tokenCleaned = token.lowercase().replace("token","").trim()
         val ret = playerService.add(tokenCleaned, player)
         return ResponseEntity.status(HttpStatus.CREATED).body(ret.uuid)
     }
@@ -125,7 +125,7 @@ class PlayerController(
                 "the team infos to set.", required = true, content = [Content(
                     schema = Schema(implementation = TeamDto::class))]) @Valid @RequestBody player: PlayerDto
     ) : ResponseEntity<PlayerDto> {
-        val tokenCleaned = token.lowercase().replace("token","").trim().uppercase()
+        val tokenCleaned = token.lowercase().replace("token","").trim()
         return ResponseEntity.ok(playerService.change(tokenCleaned, id, player))
     }
 
@@ -144,7 +144,7 @@ class PlayerController(
                    @PathVariable(value = "id") id: UUID,
                    @RequestHeader(value = "Authorization") token: String
     ) : ResponseEntity<Unit> {
-        val tokenCleaned = token.lowercase().replace("token","").trim().uppercase()
+        val tokenCleaned = token.lowercase().replace("token","").trim()
         playerService.delete(tokenCleaned, id)
         return ResponseEntity.noContent().build()
     }
