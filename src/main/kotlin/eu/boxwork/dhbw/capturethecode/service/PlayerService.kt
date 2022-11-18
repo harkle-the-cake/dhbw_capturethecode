@@ -38,20 +38,20 @@ class PlayerService(
     @Throws(ServiceException::class)
     fun add(token: String, player: PlayerDto) : PlayerDto
     {
-        val cnt = repo.count()
-        if (cnt>=max) throw ServiceException(418,"team limit exceeded")
-
-        val playerIn = repo.findByName(player.name)
-
-        if (playerIn!=null)
-        {
-            throw ServiceException(409,"player already exists")
-        }
-
         val team = teamRepo.findByTeamName(player.teamName)?:throw ServiceException(412,"team not available")
 
         if (team.teamToken==token ||adminTokenToUse==token)
         {
+            val cnt = repo.countByTeamUuid(team.uuid)
+            if (cnt>=max) throw ServiceException(418,"team limit exceeded")
+
+            val playerIn = repo.findByName(player.name)
+
+            if (playerIn!=null)
+            {
+                throw ServiceException(409,"player already exists")
+            }
+
             val toAdd = Player(
                 uuid = UUID.randomUUID(),
                 player.name,

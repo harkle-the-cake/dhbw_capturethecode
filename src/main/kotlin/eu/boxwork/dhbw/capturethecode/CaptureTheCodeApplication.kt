@@ -18,7 +18,7 @@ import org.springframework.scheduling.annotation.EnableScheduling
 	"eu.boxwork.dhbw.capturethecode.service",
 	"eu.boxwork.dhbw.capturethecode.security",
 	"eu.boxwork.dhbw.capturethecode.components")
-@OpenAPIDefinition(info = Info(title = "Capture Code API", version = "0.1.3 (see endpoint /base/info)",
+@OpenAPIDefinition(info = Info(title = "Capture Code API", version = "0.1.4 (see endpoint /base/info)",
 	description = "Api for training, administration and competition in the CTC."))
 @SecurityScheme(name = "Token", scheme = "token", type = SecuritySchemeType.APIKEY, `in` = SecuritySchemeIn.HEADER)
 @EnableScheduling

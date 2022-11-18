@@ -21,6 +21,7 @@ class PlayerTest (
 	@Autowired val playerService: PlayerService,
 	@Value("\${server.port}") val port: Int,
 	@Value("\${admin.token}") val adminToken: String,
+	@Value("\${team.players}") val maxPlayerCount: Int,
 	@Value("\${server.servlet.context-path}") private val baseURL: String,
 )
 {
@@ -155,6 +156,120 @@ class PlayerTest (
 	/*
 	* ############# ADD  ################
 	* */
+	@Test
+	fun addMaxPlayers() {
+		for (i in 0 until maxPlayerCount-2)
+		{
+			val name = "PT_ADD_$i"
+			val toAdd = PlayerDto(
+				null,
+				name,
+				"TEAM_A"
+			)
+			val added = webClient.put()
+				.uri(base)
+				.header("Authorization",getToken(teamAToken))
+				.bodyValue(toAdd)
+				.retrieve().bodyToMono(UUID::class.java).block()
+
+			Assertions.assertNotNull(added)
+		}
+
+		// final should fail
+		val toAdd = PlayerDto(
+			null,
+			"PT_ADD_CRASH",
+			"TEAM_A"
+		)
+		try {
+			webClient.put()
+				.uri(base)
+				.header("Authorization",getToken(teamAToken))
+				.bodyValue(toAdd)
+				.retrieve().bodyToMono(UUID::class.java).block()
+			fail("added more than allowed")
+		}
+		catch (e:WebClientResponseException)
+		{
+			Assertions.assertEquals(418, e.rawStatusCode)
+		}
+	}
+
+	@Test
+	fun addMaxPlayersBothTeams() {
+		for (i in 0 until maxPlayerCount-2)
+		{
+			val name = "PT_ADD_A_$i"
+			val toAdd = PlayerDto(
+				null,
+				name,
+				"TEAM_A"
+			)
+			val added = webClient.put()
+				.uri(base)
+				.header("Authorization",getToken(teamAToken))
+				.bodyValue(toAdd)
+				.retrieve().bodyToMono(UUID::class.java).block()
+
+			Assertions.assertNotNull(added)
+		}
+
+		for (i in 0 until maxPlayerCount-3)
+		{
+			val name = "PT_ADD_B_$i"
+			val toAdd = PlayerDto(
+				null,
+				name,
+				"TEAM_B"
+			)
+			val added = webClient.put()
+				.uri(base)
+				.header("Authorization",getToken(teamBToken))
+				.bodyValue(toAdd)
+				.retrieve().bodyToMono(UUID::class.java).block()
+
+			Assertions.assertNotNull(added)
+		}
+
+		// final should fail
+		val toAdd = PlayerDto(
+			null,
+			"PT_ADD_CRASH",
+			"TEAM_A"
+		)
+		try {
+			webClient.put()
+				.uri(base)
+				.header("Authorization",getToken(teamAToken))
+				.bodyValue(toAdd)
+				.retrieve().bodyToMono(UUID::class.java).block()
+			fail("added more than allowed")
+		}
+		catch (e:WebClientResponseException)
+		{
+			Assertions.assertEquals(418, e.rawStatusCode)
+		}
+
+		// final should fail
+		val toAddB = PlayerDto(
+			null,
+			"PT_ADD_B_CRASH",
+			"TEAM_B"
+		)
+		try {
+			webClient.put()
+				.uri(base)
+				.header("Authorization",getToken(teamBToken))
+				.bodyValue(toAddB)
+				.retrieve().bodyToMono(UUID::class.java).block()
+			fail("added more than allowed")
+		}
+		catch (e:WebClientResponseException)
+		{
+			Assertions.assertEquals(418, e.rawStatusCode)
+		}
+	}
+
 	@Test
 	fun addNewPlayer() {
 		val toAdd = PlayerDto(

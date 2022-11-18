@@ -8,4 +8,5 @@ import java.util.*
 interface PlayerRepository : JpaRepository<Player, UUID> {
     fun findByName(name: String): Player?
     fun findByTeamUuid(teamUuid: UUID): List<Player>
+    fun countByTeamUuid(teamUuid: UUID): Int
 }
