@@ -1,0 +1,66 @@
+<!DOCTYPE HTML>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta http-equiv=”refresh” content=”1" />
+    <title>CTC - Gameground</title>
+</head>
+
+<body>
+
+<p>
+    <span>Running:</span>
+<table>
+    <tr>
+        <th>ID</th>
+        <th>Team A</th>
+        <th>Team B</th>
+    </tr>
+    <tr>
+        <td th:text="${t.id}"></td>
+        <td th:text="${t.teamA}"></td>
+        <td th:text="${t.teamB}"></td>
+    </tr>
+</table>
+</p>
+
+<span>Players:</span>
+<div th:if="${ not#lists.isEmpty(t.players)}">
+    <table>
+        <tr>
+            <th>Name</th>
+            <th>Has Token</th>
+            <th>Action</th>
+            <th>State</th>
+        </tr>
+        <tr th:each="p : ${players}">
+            <td th:text="${p.name}"></td>
+            <td th:text="${p.hasCode}"></td>
+            <td th:text="${p.action}"></td>
+            <td th:text="${p.state}"></td>
+        </tr>
+    </table>
+</div>
+
+<span>Events:</span>
+<div th:if="${ not#lists.isEmpty(t.events)}">
+    <table>
+        <tr>
+            <th>Round</th>
+            <th>Source</th>
+            <th>Target</th>
+            <th>Event</th>
+        </tr>
+        <tr th:each="e : ${events}">
+            <td th:text="${e.round}"></td>
+            <td th:text="${e.source}"></td>
+            <td th:text="${e.target}"></td>
+            <td th:text="${e.event}"></td>
+        </tr>
+    </table>
+</div>
+
+<!-- /.container -->
+</body>
+</html>

@@ -20,8 +20,8 @@
             <th>Team</th>
         </tr>
         <tr th:each="training : ${trainings}">
-            <td th:text="${training.id}"></td>
-            <td th:text="${training.teamA}"></td>
+            <td><a th:href="@{'/ui/spectate?id=' + ${training.id}}" th:text="${training.id}"></a></td>
+            <td><a th:href="@{'/ui/spectate?id=' + ${training.id}}" th:text="${training.teamA}"></a></td>
         </tr>
     </table>
 </div>

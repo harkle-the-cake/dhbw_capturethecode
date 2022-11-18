@@ -28,23 +28,37 @@ class SpectatorController(
         return model
     }
 
-    @GetMapping(value = ["/training","/training.html"])
+    @GetMapping(value = ["/trainings","/trainings.html"])
     fun trainings(): ModelAndView {
         val model = ModelAndView()
-        model.viewName = "training"
+        model.viewName = "trainings"
         model.addObject("baseURL", baseURL)
         model.addObject("trainings", trainingService.listUI())
         return model
     }
 
-    @GetMapping(value = ["/competition","/competition.html"])
+    @GetMapping(value = ["/spectate","/spectate"])
+    fun training(
+        @RequestParam("id") id: UUID
+    ): ModelAndView {
+        val model = ModelAndView()
+        val training = trainingService.spectate(id)
+        model.viewName = "spectate"
+        model.addObject("baseURL", baseURL)
+        model.addObject("t", training)
+        return model
+    }
+
+    @GetMapping(value = ["/competitions","/competitions.html"])
     fun competitions(): ModelAndView {
         val model = ModelAndView()
-        model.viewName = "competition"
+        model.viewName = "competitions"
         model.addObject("baseURL", baseURL)
         model.addObject("competitions", competitionService.listUI())
         return model
     }
+
+
 
     @GetMapping(value = ["/teams","/teams.html"])
     fun teams(): ModelAndView {

@@ -28,14 +28,14 @@ A target for a action may be any player, own or opponent players.
 | look at        | +             | returns the current status of the target the player looks at. | 
 
 ### Normal Actions
-| Action      | Target needed | Effect                                                         |
-|-------------|---------------|----------------------------------------------------------------|
-| observe     | -             | returns if the player has the flag/code                        |
-| fetch/catch | -             | returns the current status of the target the player looks at   |
-| grap        | +             | returns the current status of the target the player looks at   |
-| push        | +             | returns the current status of the target the player looks at   |
-| pass        | +             | returns the current status of the target the player looks at   |
-| get ready   | +             | returns the current status of the target the player looks at   |
+| Action      | Target needed | Effect                                                          |
+|-------------|---------------|-----------------------------------------------------------------|
+| observe     | -             | returns if the player has the flag/code                         |
+| fetch/catch | -             | fetches a flag/code passed to the player                        |
+| grap        | +             | graps a flag/code that a player holds                           |
+| push        | +             | push another player to the ground; results in penalty           |
+| pass        | +             | pass the flag/code to another player, this player must fetch    |
+| get ready   | +             | if on ground or having a panlity, next action must be get ready |
 
 ## Effects
 Some actions cause effects on the player. This is mainly of bad players pushing other players around.
@@ -48,7 +48,7 @@ Once banned or on ground, the player must take a "get ready" action to participa
 On the start, the state is "ready". In case of an error, the state changes to "UNKNOWN".
 
 ## Flag/Code
-The flag/code must be captured. Therefore a player may have different opportunities.
+The flag/code must be captured. There fore a player may have different opportunities.
 - hand over the flag to another player
 - grap and capture the flag while hand over takes place
 - flag/code is lost while the player posses the flag/code 
@@ -58,9 +58,9 @@ A player may pass the flag/code to another player using a pass action.
 The other player must use a fetch action in the same turn to get the flag/code.
 
 ### capture the flag/code
-If a flag/code is passed an opponent may get the flag/code with grap action targetting the player who is target of the handover.
+If a flag/code is passed an opponent may get the flag/code with grap action targeting the player who is target of the handover.
 This is called interception.
-If a flag/code is NOT passed. The opponent may also get the code performing a grap action targetting the player who posses the flag/code.
+If a flag/code is NOT passed. The opponent may also get the code performing a grap action targeting the player who posses the flag/code.
 (!) Grapping without interception takes place AFTER a handover; therefore opponent needs to decide who to target.
 
 ### loss of flag/code

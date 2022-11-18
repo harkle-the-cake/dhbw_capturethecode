@@ -1,18 +1,17 @@
 package eu.boxwork.dhbw.capturethecode.model
 
-import eu.boxwork.dhbw.capturethecode.dto.ActionResultDto
-import eu.boxwork.dhbw.capturethecode.dto.PlayerDto
-import eu.boxwork.dhbw.capturethecode.dto.PlayerStateDto
-import eu.boxwork.dhbw.capturethecode.dto.TeamWithMembersDto
+import eu.boxwork.dhbw.capturethecode.dto.*
 import eu.boxwork.dhbw.capturethecode.enums.Action
 import eu.boxwork.dhbw.capturethecode.enums.PlayerState
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedDeque
+import java.util.concurrent.LinkedTransferQueue
 
 class GameGround (
     val teamA: TeamWithMembersDto,
-    private val rounds:Int=100
+    private val rounds:Int=100,
+    val isTraining : Boolean = true
 ) {
     private val states : MutableMap<UUID, PlayerState> = ConcurrentHashMap()
     private val actions : MutableMap<UUID, Action> = ConcurrentHashMap()
@@ -445,7 +444,6 @@ class GameGround (
             }
         }
 
-
         events.add(Event(round, null,players[newUser]?.name, "code was randomly set to a new player"))
 
         return newUser
@@ -475,6 +473,32 @@ class GameGround (
         synchronized(this)
         {
             return userWithToken==userID
+        }
+    }
+
+    /**
+     * return the player infos only if not training
+     * @return the player infos if not in training
+     * */
+    fun getPlayerInfos(): LinkedTransferQueue<SpectatedPlayerInfo>? {
+        synchronized(this)
+        {
+            if (isTraining)
+            {
+                val ret : LinkedTransferQueue<SpectatedPlayerInfo> = LinkedTransferQueue()
+                players.forEach {
+                    ret.add(
+                        SpectatedPlayerInfo(
+                            it.value.name,
+                            states [it.key]?.name?:PlayerState.UNKNOWN.name,
+                            actions [it.key]?.name?:Action.UNKNOWN.name,
+                            (it.key==userWithToken)
+                        )
+                    )
+                }
+                return ret
+            }
+            else return null
         }
     }
 }

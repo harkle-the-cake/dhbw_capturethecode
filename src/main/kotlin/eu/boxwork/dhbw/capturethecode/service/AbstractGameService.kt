@@ -144,10 +144,29 @@ abstract class AbstractGameService(
                     it.key,
                     it.value.teamA.teamName,
                     it.value.teamB?.teamName,
-                    eventsToSet
+                    eventsToSet,
+                    it.value.getPlayerInfos()
                 )
             )
         }
         return ret
+    }
+
+    /**
+     * @param id game ground id
+     * @return the information shown to the spectator
+     * */
+    fun spectate(id: UUID): SpectatedGameGroundDto? {
+        if (!gameGrounds.containsKey(id)) return null
+        val g = gameGrounds[id]
+        val eventsToSet: LinkedTransferQueue<Event> = LinkedTransferQueue()
+        eventsToSet.addAll(g!!.events)
+        return SpectatedGameGroundDto(
+            id,
+            g.teamA.teamName,
+            g.teamB?.teamName,
+            eventsToSet,
+            g.getPlayerInfos()
+        )
     }
 }

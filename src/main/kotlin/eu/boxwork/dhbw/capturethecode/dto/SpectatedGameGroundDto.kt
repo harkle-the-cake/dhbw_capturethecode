@@ -18,4 +18,7 @@ data class SpectatedGameGroundDto (
 
     @Schema(description = "events that happened so far.",required = false)
     @JsonProperty("events", required = false) val events: LinkedTransferQueue<Event>?,
+
+    @Schema(description = "TRAINING ONLY: player infos.",required = false)
+    @JsonProperty("players", required = false) val players: LinkedTransferQueue<SpectatedPlayerInfo>?
 )
