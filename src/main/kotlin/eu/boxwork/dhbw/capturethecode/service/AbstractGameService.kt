@@ -7,7 +7,9 @@ import eu.boxwork.dhbw.capturethecode.dto.SpectatedGameGroundDto
 import eu.boxwork.dhbw.capturethecode.enums.Action
 import eu.boxwork.dhbw.capturethecode.model.Event
 import eu.boxwork.dhbw.capturethecode.model.GameGround
+import eu.boxwork.dhbw.capturethecode.runner.CompetitionRunner
 import org.apache.logging.log4j.LogManager
+import org.springframework.beans.factory.annotation.Value
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.LinkedTransferQueue
@@ -16,11 +18,13 @@ import kotlin.jvm.Throws
 
 abstract class AbstractGameService(
     private val teamService: TeamService,
-    private val playerService: PlayerService
+    private val playerService: PlayerService,
+    @Value("\${competition.rounds}") private val rounds: Int,
+    private val isTraining: Boolean
 ) {
     protected val log = LogManager.getLogger("AbstractGameService")
     protected val gameGrounds : MutableMap<UUID, GameGround> = ConcurrentHashMap()
-
+    protected val runners : MutableMap<UUID, CompetitionRunner> = ConcurrentHashMap()
 
     @Throws(ServiceException::class)
     fun start(teamID: UUID): UUID {
@@ -35,7 +39,7 @@ abstract class AbstractGameService(
             players
         )
 
-        val cord = GameGround(teamToSet)
+        val cord = GameGround(teamToSet,rounds, isTraining)
         cord.startGame(teamToSet)
 
         log.info("initialising new ground for team $teamID")
@@ -55,6 +59,11 @@ abstract class AbstractGameService(
             while(gameGrounds.isNotEmpty())
                 gameGrounds.remove(
                     gameGrounds.keys.first()
+                )!!.finish()
+
+            while(runners.isNotEmpty())
+                runners.remove(
+                    runners.keys.first()
                 )!!.finish()
         }
     }

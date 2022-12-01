@@ -21,9 +21,9 @@
             <th>Team B</th>
         </tr>
         <tr th:each="competition : ${competitions}">
-            <td th:text="${competition.id}"></td>
-            <td th:text="${competition.teamA}"></td>
-            <td th:text="${competition.teamB}"></td>
+            <td><a th:href="@{'/ui/spectate?id=' + ${competition.id}}" th:text="${competition.id}"></a></td>
+            <td><a th:href="@{'/ui/spectate?id=' + ${competition.id}}" th:text="${competition.teamA}"></a></td>
+            <td><a th:href="@{'/ui/spectate?id=' + ${competition.id}}" th:text="${competition.teamB}"></a></td>
         </tr>
     </table>
 </div>

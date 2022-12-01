@@ -24,7 +24,7 @@ class GameGround (
     var resultB : Int = 0
     private var gameOver : Boolean = true
 
-    private var round=0
+    var round=0
     var teamB: TeamWithMembersDto? = null
     /**
      * initialises the cord with the first team right at the beginning
@@ -458,9 +458,10 @@ class GameGround (
 
         teamB?.teamMembers?.forEach{
             states[it.uuid!!]=PlayerState.READY
+            players[it.uuid] = it
         }
 
-        userWithToken = dropTokenRandomly()
+        //userWithToken = dropTokenRandomly()
         gameOver = false
     }
 

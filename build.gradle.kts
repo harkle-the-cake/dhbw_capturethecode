@@ -9,7 +9,7 @@ plugins {
 }
 
 group = "eu.boxwork.dhbw"
-version = "0.2.0"
+version = "0.3.0"
 java.sourceCompatibility = JavaVersion.VERSION_17
 
 repositories {
@@ -25,7 +25,7 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-validation")
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
 	implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-	implementation("org.springdoc:springdoc-openapi-ui:1.6.11")
+	implementation("org.springdoc:springdoc-openapi-ui:1.6.13")
 
 	// https://mvnrepository.com/artifact/com.squareup.okhttp3/okhttp
 	implementation("com.squareup.okhttp3:okhttp:4.10.0")
