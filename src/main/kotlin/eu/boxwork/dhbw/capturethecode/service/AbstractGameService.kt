@@ -40,7 +40,7 @@ abstract class AbstractGameService(
         )
 
         val cord = GameGround(teamToSet,rounds, isTraining)
-        cord.startGame(teamToSet)
+        if (isTraining) cord.startGame(teamToSet)
 
         log.info("initialising new ground for team $teamID")
 

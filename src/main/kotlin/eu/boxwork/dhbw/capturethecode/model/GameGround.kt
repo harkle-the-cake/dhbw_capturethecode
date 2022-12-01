@@ -31,6 +31,7 @@ class GameGround (
      * */
     init
     {
+        events.add(Event(round, teamA.teamName,null, "started new competition/training"))
         teamA.teamMembers.forEach{
             states[it.uuid!!]=PlayerState.READY
             players[it.uuid] = it
@@ -455,13 +456,14 @@ class GameGround (
      * */
     fun startGame(teamToSet: TeamWithMembersDto) {
         teamB = teamToSet
+        events.add(Event(round, teamB!!.teamName,null, "joined competition/training"))
 
         teamB?.teamMembers?.forEach{
             states[it.uuid!!]=PlayerState.READY
             players[it.uuid] = it
         }
 
-        //userWithToken = dropTokenRandomly()
+        userWithToken = dropTokenRandomly()
         gameOver = false
     }
 

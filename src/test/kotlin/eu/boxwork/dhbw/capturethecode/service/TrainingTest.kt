@@ -337,6 +337,14 @@ class TrainingTest (
 			performAction(p3, Action.CATCH)
 			performAction(p2, Action.PASS, p3)
 		}
+		else if (hasFlag(p3))
+		{
+			// all fine
+		}
+		else
+		{
+			fail("error")
+		}
 
 		// next
 		turn()
