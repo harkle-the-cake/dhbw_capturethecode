@@ -17,7 +17,7 @@ class PlayerDto (
     @JsonProperty("name", required = true)
     @field:Pattern(regexp = "\\w{1,20}", message = "up to 20 characters are allowed") val name: String,
 
-    @Schema(description = "the name of the team, must be unique.",required = true)
-    @JsonProperty("teamName", required = true)
-    @field:Pattern(regexp = "\\w{1,20}", message = "up to 20 characters are allowed") val teamName: String
+    @Schema(description = "the name of the team, must be unique.",required = false)
+    @JsonProperty("teamName", required = false)
+    @field:Pattern(regexp = "\\w{1,20}", message = "up to 20 characters are allowed") val teamName: String?
 )

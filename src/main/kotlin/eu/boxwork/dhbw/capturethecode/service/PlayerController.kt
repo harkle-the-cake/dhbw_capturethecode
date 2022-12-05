@@ -89,6 +89,7 @@ class PlayerController(
             ))]),
         ApiResponse(responseCode = "400", description = "player name not valid", content = [Content()]),
         ApiResponse(responseCode = "401", description = "user not allowed at all", content = [Content()]),
+        ApiResponse(responseCode = "403", description = "team token not valid, unable to add a player to the team", content = [Content()]),
         ApiResponse(responseCode = "409", description = "player name already exists", content = [Content()]),
         ApiResponse(responseCode = "418", description = "max player count reached", content = [Content()])]
     )

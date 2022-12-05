@@ -307,7 +307,7 @@ class PlayerTest (
 		}
 	}
 
-	@Test
+/*	@Test
 	fun addNewPlayerInvalidTeam1() {
 		val toAdd = PlayerDto(
 			null,
@@ -326,7 +326,7 @@ class PlayerTest (
 		{
 			Assertions.assertEquals(403, e.rawStatusCode)
 		}
-	}
+	}*/
 
 	@Test
 	fun addNewPlayerInvalidName() {
