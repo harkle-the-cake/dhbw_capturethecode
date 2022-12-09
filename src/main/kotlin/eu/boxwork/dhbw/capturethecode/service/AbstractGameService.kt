@@ -99,7 +99,8 @@ abstract class AbstractGameService(
                 training!!.teamA.teamName,
                 training.resultA,
                 training.teamB?.teamName,
-                training.resultB
+                training.resultB,
+                training.round
             )
         }
     }

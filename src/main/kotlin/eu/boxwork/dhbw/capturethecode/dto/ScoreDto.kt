@@ -20,4 +20,7 @@ class ScoreDto (
 
     @Schema(description = "score of the second team.",required = false)
     @JsonProperty("scoreTeamB", required = false) val scoreTeamB: Int?,
+    
+    @Schema(description = "the current round.",required = false)
+    @JsonProperty("round", required = false) val round: Int?,
 )
