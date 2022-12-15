@@ -255,6 +255,7 @@ class GameGround (
                 // user may only get up
                 if (action==Action.GETREADY) {
                     actions[user] = action
+                    states[user] = PlayerState.READY
                     events.add(Event(round, players[user]?.name,null, "gets ready again."))
                 }
                 else {
