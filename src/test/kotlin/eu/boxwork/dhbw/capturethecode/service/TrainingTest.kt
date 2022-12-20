@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
+import org.springframework.util.Assert
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import java.util.*
@@ -475,8 +476,26 @@ class TrainingTest (
 		// p1 should have the token now
 		Assertions.assertTrue(hasFlag(p1))
 
+		// p2 is banned and p3 on ground, p1 has a look
+		// get ready again
+		performAction(p2, Action.GETREADY)
+		performAction(p3, Action.GETREADY)
+
+		val result = performAction(p1, Action.OBSERVE)
+		val p2State = result.targetStates!!.firstOrNull { it.uuid==p2.uuid }?.state
+		val p3State = result.targetStates!!.firstOrNull { it.uuid==p3.uuid }?.state
+		Assertions.assertEquals("ON_GROUND", p3State)
+		Assertions.assertEquals("BANNED", p2State)
+
 		// next
 		turn()
+
+		val resultAfter = performAction(p1, Action.OBSERVE)
+		val p2StateAfter = resultAfter.targetStates!!.firstOrNull { it.uuid==p2.uuid }?.state
+		val p3StateAfter = resultAfter.targetStates!!.firstOrNull { it.uuid==p3.uuid }?.state
+		Assertions.assertEquals("READY", p3StateAfter)
+		Assertions.assertEquals("READY", p2StateAfter)
+
 
 		// score = 3, since 3 rounds
 		score(3)

@@ -111,6 +111,10 @@ class GameGround (
             {
                 grap(it, targets[it])
             }
+            else if (actions[it]==Action.GETREADY)
+            {
+                states[it]=PlayerState.READY
+            }
         }
 
         // clear actions

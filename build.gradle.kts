@@ -9,7 +9,7 @@ plugins {
 }
 
 group = "eu.boxwork.dhbw"
-version = "0.4.0"
+version = "0.4.1"
 java.sourceCompatibility = JavaVersion.VERSION_17
 
 repositories {
